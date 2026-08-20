@@ -1,0 +1,108 @@
+{
+  "summary": {
+    "signed": {
+      "n_coalitions": 6.0,
+      "avg_purity": 3.0,
+      "poisoned_coalition_ratio": 1.5,
+      "conflict_ratio": 0.0
+    },
+    "unsigned": {
+      "n_coalitions": 3.0,
+      "avg_purity": 2.142,
+      "poisoned_coalition_ratio": 0.0,
+      "conflict_ratio": 3.0
+    },
+    "similarity": {
+      "n_coalitions": 3.0,
+      "avg_purity": 2.142,
+      "poisoned_coalition_ratio": 0.0,
+      "conflict_ratio": 0.0
+    }
+  },
+  "rows": [
+    {
+      "dataset": "nq",
+      "query_id": "test1",
+      "signed": {
+        "mode": "signed",
+        "n_coalitions": 2,
+        "avg_purity": 1.0,
+        "avg_size": 3.5,
+        "poisoned_coalition_ratio": 0.5,
+        "conflict_ratio": 0.0
+      },
+      "unsigned": {
+        "mode": "unsigned",
+        "n_coalitions": 1,
+        "avg_purity": 0.714,
+        "avg_size": 7.0,
+        "poisoned_coalition_ratio": 0.0,
+        "conflict_ratio": 1.0
+      },
+      "similarity": {
+        "mode": "unsigned",
+        "n_coalitions": 1,
+        "avg_purity": 0.714,
+        "avg_size": 7.0,
+        "poisoned_coalition_ratio": 0.0,
+        "conflict_ratio": 0.0
+      }
+    },
+    {
+      "dataset": "nq",
+      "query_id": "test11",
+      "signed": {
+        "mode": "signed",
+        "n_coalitions": 2,
+        "avg_purity": 1.0,
+        "avg_size": 3.5,
+        "poisoned_coalition_ratio": 0.5,
+        "conflict_ratio": 0.0
+      },
+      "unsigned": {
+        "mode": "unsigned",
+        "n_coalitions": 1,
+        "avg_purity": 0.714,
+        "avg_size": 7.0,
+        "poisoned_coalition_ratio": 0.0,
+        "conflict_ratio": 1.0
+      },
+      "similarity": {
+        "mode": "unsigned",
+        "n_coalitions": 1,
+        "avg_purity": 0.714,
+        "avg_size": 7.0,
+        "poisoned_coalition_ratio": 0.0,
+        "conflict_ratio": 0.0
+      }
+    },
+    {
+      "dataset": "nq",
+      "query_id": "test16",
+      "signed": {
+        "mode": "signed",
+        "n_coalitions": 2,
+        "avg_purity": 1.0,
+        "avg_size": 3.5,
+        "poisoned_coalition_ratio": 0.5,
+        "conflict_ratio": 0.0
+      },
+      "unsigned": {
+        "mode": "unsigned",
+        "n_coalitions": 1,
+        "avg_purity": 0.714,
+        "avg_size": 7.0,
+        "poisoned_coalition_ratio": 0.0,
+        "conflict_ratio": 1.0
+      },
+      "similarity": {
+        "mode": "unsigned",
+        "n_coalitions": 1,
+        "avg_purity": 0.714,
+        "avg_size": 7.0,
+        "poisoned_coalition_ratio": 0.0,
+        "conflict_ratio": 0.0
+      }
+    }
+  ]
+}

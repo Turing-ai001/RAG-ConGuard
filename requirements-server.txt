@@ -1,0 +1,62 @@
+# ============================================================================
+# requirements-server.txt  ——  服务器 GPU 环境依赖（适配你的环境）
+# 环境：Miniconda 环境名 = rag，Python = 3.12，PyTorch = 2.5.1，CUDA = 12.4
+#
+# 用法（在服务器上，rag 环境激活后）：
+#   1) 先装 torch（二选一，详见下方注释）
+#   2) 再装本文件其余依赖：  pip install -r requirements-server.txt
+#
+# 注意：本文件里的 torch / faiss 需要单独用专用 index 或包名安装，
+#       请不要直接 `pip install -r` 含 torch 的行而不指定 index。
+# ============================================================================
+
+# ---------- 1. PyTorch（必须最先装）----------
+# 注意：AutoDL「学术加速 / network_turbo」只代理 github 与 huggingface，
+#       不能加速 download.pytorch.org 的 wheel，因此对 torch 安装无效；
+#       但它对你后面下载 Qwen2.5-7B / BGE（走 HF）很有用，记得开着。
+# 真正加速 torch 安装请用国内 pip 镜像：
+#
+# 方案 A（最推荐，最快最省事）：默认 PyPI 的 torch 即 cu121 构建，
+#       可在 CUDA 12.4 驱动上正常运行，直接走清华镜像，不碰 pytorch.org：
+#   pip install torch==2.5.1 torchvision==0.20.1 -i https://pypi.tuna.tsinghua.edu.cn/simple
+#
+# 方案 B（严格 cu124）：用清华 pytorch-wheels 镜像（镜像了 /whl/cu124）：
+#   pip install torch==2.5.1 torchvision==0.20.1 \
+#       --index-url https://mirrors.tuna.tsinghua.edu.cn/pytorch-wheels/cu124
+#
+# 镜像站备选：-i https://mirrors.aliyun.com/pypi/simple
+#            -i https://mirrors.cloud.tencent.com/pypi/simple
+#            -i https://pypi.mirrors.ustc.edu.cn/simple
+# —— 下面这行仅作占位/记录，实际请用上面任一命令安装 ——
+# torch==2.5.1
+
+# ---------- 2. 核心依赖（与代码 import 一一对应）----------
+transformers>=4.45          # AutoModelForCausalLM / AutoTokenizer（Qwen2.5 需 >=4.45）
+sentence-transformers>=3.0.1 # SentenceTransformer（BGE 检索，3.x 才完整支持 py3.12）
+rank-bm25>=0.2.2            # BM25Okapi 关键词检索
+datasets>=3.0.0             # load_dataset（下载 BEIR/NQ/HotpotQA 语料）
+openai>=1.30                # vLLM OpenAI 兼容端点客户端
+numpy<2                     # 锁定 <2，避免与 faiss / torch 2.5.1 出现 ABI 冲突
+scikit-learn                # 评估指标等
+networkx>=3.2               # 关系图构建/可视化
+matplotlib>=3.8            # 图可视化（服务器需设 MPLBACKEND=Agg）
+accelerate                  # transformers 加载 7B 模型时做设备映射
+huggingface_hub             # snapshot_download 拉取模型（setup 脚本用到）
+
+# ---------- 3. FAISS（向量检索索引）----------
+# GPU 版（CUDA 12.x 通用，可在 12.4 上跑，需驱动 >= R550）：
+faiss-gpu-cu12
+# 若 GPU 版装不上/想省事，改用 CPU 版（本项目默认就是 faiss-cpu，规模不大完全够用）：
+# faiss-cpu>=1.8
+
+# ---------- 4. vLLM（可选，仅当你用 vllm 后端服务 Qwen2.5-7B 时）----------
+# 0.7.3 是与 PyTorch 2.5.1 / Python 3.12 匹配的版本；不要装更新或更新的大版本。
+# 装它前请先确保 torch==2.5.1 已在环境中（否则它可能改写 torch 为默认 cu121 构建，仍可运行）。
+# vllm==0.7.3
+
+# ============================================================================
+# 验证：
+#   python -c "import torch, transformers, faiss, sentence_transformers; \
+#              print(torch.__version__, torch.cuda.is_available(), faiss.__version__)"
+#   期望：2.5.1  True  <faiss 版本>
+# ============================================================================

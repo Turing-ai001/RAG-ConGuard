@@ -1,0 +1,13 @@
+# P0 本地（CPU）与服务器共用依赖
+# 服务器 GPU 环境：torch 与 faiss 用 cu121 版本替换（见 scripts/setup_server.sh）
+torch>=2.1
+transformers>=4.40
+sentence-transformers>=2.7
+faiss-cpu>=1.8
+rank-bm25>=0.2.2
+datasets>=2.19
+openai>=1.30
+numpy
+scikit-learn
+networkx>=3.2
+matplotlib>=3.8
