@@ -1,6 +1,7 @@
 """BM25 关键词检索（rank_bm25）。
 视角 2：仅返回与 query 有词项重叠的文档（0 分文档不参与融合，避免 RRF 噪声）。
 """
+import multiprocessing as mp
 import re
 from typing import Optional
 
@@ -8,6 +9,8 @@ import numpy as np
 from rank_bm25 import BM25Okapi
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
+
+_N_WORKERS = 16   # 全量 60 万文档 tokenize 单线程受限（正则扫描），并行化构建
 
 
 def tokenize(text: str) -> list[str]:
@@ -20,7 +23,12 @@ class BM25Index:
         if len(doc_ids) != len(texts):
             raise ValueError("doc_ids and texts must have equal length")
         self.doc_ids = list(doc_ids)
-        self.bm25 = BM25Okapi([tokenize(t) for t in texts])
+        if len(texts) < 10000:                     # 小规模：直接单进程（进程池开销大于收益）
+            corpus = [tokenize(t) for t in texts]
+        else:
+            with mp.Pool(processes=_N_WORKERS) as pool:
+                corpus = list(pool.imap(tokenize, texts, chunksize=512))
+        self.bm25 = BM25Okapi(corpus)
 
     def search(self, query: str, k: int) -> list[tuple[str, float]]:
         """返回 [(doc_id, bm25_score), ...]，仅含命中词项重叠的文档。"""

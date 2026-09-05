@@ -59,6 +59,29 @@ class HFBackend(LLMBackend):
                 pass
         return prompt
 
+    def probe_logits(self, prompt: str, prefix_tokens: list[int],
+                     top_k: int = 0) -> "torch.Tensor":
+        """Exact-CCI 用：teacher-forced 探针。
+
+        prompt 渲染后拼接 prefix_tokens 做一次 forward，返回 logits
+        （shape (len(prefix), vocab)）：第 t 行 = 在给定 prefix[0..t] 位置 t
+        处预测下一个 token 的 logits。两个上下文（full / D\\C）传入相同
+        prefix_tokens 即可对齐逐位置比较。只读、不改图、不加 decode。
+        """
+        self._ensure_loaded()
+        chat = self._format(prompt)
+        ids = self._tokenizer(chat, return_tensors="pt",
+                              truncation=True, max_length=4096)
+        device = self._model.device
+        input_ids = torch.cat([ids.input_ids.to(device),
+                               torch.tensor([prefix_tokens]).to(device)], dim=1)
+        attn = torch.ones_like(input_ids)
+        with torch.no_grad():
+            logits = self._model(input_ids=input_ids, attention_mask=attn).logits
+        # logits[i] 是第 i 个位置输入的输出 → 取 prompt 之后的位置
+        Lp = ids.input_ids.shape[1]
+        return logits[0, Lp - 1:-1]          # 每个 prefix 位置一个分布
+
     def complete(self, prompts, max_new_tokens: int | None = None,
                  temperature: float | None = None):
         from config import LLM_MAX_NEW_TOKENS, LLM_TEMPERATURE

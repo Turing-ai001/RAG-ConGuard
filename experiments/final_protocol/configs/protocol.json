@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "seed": 20260825,
+  "datasets": ["nq", "hotpotqa", "msmarco"],
+  "splits_dir": "splits",
+  "split_per_dataset": {"train": 60, "val": 20, "test": 20},
+  "clean_per_dataset": {"val": 100, "test": 300},
+  "retrieval": {
+    "top_k": 5, "pool_k": 20, "rrf_k": 60,
+    "views": {"dense": true, "bm25": true, "kg": false}
+  },
+  "claim": {"mode": "excerpt_220", "excerpt_len": 220},
+  "graph": {"mode": "signed", "nli_threshold": 0.7, "numeric_conflict": true,
+            "judge_alpha": 0.3},
+  "generator": {
+    "backend": "hf",
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "dtype": "fp16", "temperature": 0.0, "max_new_tokens": 128
+  },
+  "risk_learner": {"kind": "mlp", "hidden": [16, 8], "max_iter": 500,
+                   "label_purity_threshold": 0.8},
+  "metrics": ["asr", "accuracy", "refusal", "retrieval_asr@5",
+              "avg_poisoned_top5", "clean_accuracy", "benign_mis_filter",
+              "auc", "purity", "conflict_ratio"],
+  "selection_constraints": {"max_refusal": 0.10, "max_clean_acc_drop": 0.05}
+}

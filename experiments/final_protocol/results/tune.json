@@ -1,0 +1,292 @@
+{
+  "scan": [
+    {
+      "selector": "s0",
+      "params": {
+        "tau": 0.05
+      },
+      "asr": 0.1833,
+      "accuracy": 0.1833,
+      "refusal": 0.5833,
+      "n": 60,
+      "avg_removed": 3.8,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s0",
+      "params": {
+        "tau": 0.1
+      },
+      "asr": 0.2,
+      "accuracy": 0.1667,
+      "refusal": 0.5833,
+      "n": 60,
+      "avg_removed": 3.767,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s0",
+      "params": {
+        "tau": 0.15
+      },
+      "asr": 0.2167,
+      "accuracy": 0.15,
+      "refusal": 0.5833,
+      "n": 60,
+      "avg_removed": 3.467,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s0",
+      "params": {
+        "tau": 0.2
+      },
+      "asr": 0.2333,
+      "accuracy": 0.1667,
+      "refusal": 0.5333,
+      "n": 60,
+      "avg_removed": 3.367,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s0",
+      "params": {
+        "tau": 0.25
+      },
+      "asr": 0.2333,
+      "accuracy": 0.1667,
+      "refusal": 0.5333,
+      "n": 60,
+      "avg_removed": 3.333,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s0",
+      "params": {
+        "tau": 0.3
+      },
+      "asr": 0.2167,
+      "accuracy": 0.1833,
+      "refusal": 0.5333,
+      "n": 60,
+      "avg_removed": 3.233,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s0",
+      "params": {
+        "tau": 0.4
+      },
+      "asr": 0.2667,
+      "accuracy": 0.1667,
+      "refusal": 0.5167,
+      "n": 60,
+      "avg_removed": 3.033,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s0",
+      "params": {
+        "tau": 0.5
+      },
+      "asr": 0.3333,
+      "accuracy": 0.1667,
+      "refusal": 0.4667,
+      "n": 60,
+      "avg_removed": 2.6,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s1",
+      "params": {
+        "tau": 0.05
+      },
+      "asr": 0.2,
+      "accuracy": 0.2,
+      "refusal": 0.5333,
+      "n": 60,
+      "avg_removed": 3.667,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s1",
+      "params": {
+        "tau": 0.1
+      },
+      "asr": 0.2167,
+      "accuracy": 0.1833,
+      "refusal": 0.5333,
+      "n": 60,
+      "avg_removed": 3.633,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s1",
+      "params": {
+        "tau": 0.15
+      },
+      "asr": 0.2333,
+      "accuracy": 0.1667,
+      "refusal": 0.5333,
+      "n": 60,
+      "avg_removed": 3.367,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s1",
+      "params": {
+        "tau": 0.2
+      },
+      "asr": 0.2333,
+      "accuracy": 0.1667,
+      "refusal": 0.5333,
+      "n": 60,
+      "avg_removed": 3.367,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s1",
+      "params": {
+        "tau": 0.25
+      },
+      "asr": 0.2333,
+      "accuracy": 0.1667,
+      "refusal": 0.5333,
+      "n": 60,
+      "avg_removed": 3.333,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s1",
+      "params": {
+        "tau": 0.3
+      },
+      "asr": 0.2167,
+      "accuracy": 0.1833,
+      "refusal": 0.5333,
+      "n": 60,
+      "avg_removed": 3.233,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s1",
+      "params": {
+        "tau": 0.4
+      },
+      "asr": 0.2667,
+      "accuracy": 0.1667,
+      "refusal": 0.5167,
+      "n": 60,
+      "avg_removed": 3.033,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s1",
+      "params": {
+        "tau": 0.5
+      },
+      "asr": 0.3333,
+      "accuracy": 0.1667,
+      "refusal": 0.4667,
+      "n": 60,
+      "avg_removed": 2.6,
+      "ok_refusal": false
+    },
+    {
+      "selector": "s2",
+      "params": {
+        "lam": 0.2
+      },
+      "asr": 0.6333,
+      "accuracy": 0.1833,
+      "refusal": 0.1,
+      "n": 60,
+      "avg_removed": 1.483,
+      "ok_refusal": true
+    },
+    {
+      "selector": "s2",
+      "params": {
+        "lam": 0.35
+      },
+      "asr": 0.6333,
+      "accuracy": 0.1833,
+      "refusal": 0.1,
+      "n": 60,
+      "avg_removed": 1.483,
+      "ok_refusal": true
+    },
+    {
+      "selector": "s2",
+      "params": {
+        "lam": 0.5
+      },
+      "asr": 0.7167,
+      "accuracy": 0.1667,
+      "refusal": 0.05,
+      "n": 60,
+      "avg_removed": 1.017,
+      "ok_refusal": true
+    },
+    {
+      "selector": "s2",
+      "params": {
+        "lam": 0.6
+      },
+      "asr": 0.8,
+      "accuracy": 0.1667,
+      "refusal": 0.0,
+      "n": 60,
+      "avg_removed": 0.517,
+      "ok_refusal": true
+    },
+    {
+      "selector": "s2",
+      "params": {
+        "lam": 0.75
+      },
+      "asr": 0.8,
+      "accuracy": 0.1667,
+      "refusal": 0.0,
+      "n": 60,
+      "avg_removed": 0.517,
+      "ok_refusal": true
+    },
+    {
+      "selector": "s2",
+      "params": {
+        "lam": 1.0
+      },
+      "asr": 0.85,
+      "accuracy": 0.1167,
+      "refusal": 0.0,
+      "n": 60,
+      "avg_removed": 0.0,
+      "ok_refusal": true
+    }
+  ],
+  "chosen": {
+    "selector": "s2",
+    "params": {
+      "lam": 0.2
+    },
+    "asr": 0.6333,
+    "refusal": 0.1,
+    "constraint_ok": true
+  },
+  "clean_B0_ref": {
+    "n": 300,
+    "asr": 0.0,
+    "accuracy": 0.0,
+    "refusal": 0.27,
+    "other": 0.73,
+    "asr_nonrefusal": 0.0,
+    "accuracy_nonrefusal": 0.0,
+    "cnt": {
+      "attack_success": 0,
+      "correct": 0,
+      "refusal": 81,
+      "other": 219
+    }
+  }
+}

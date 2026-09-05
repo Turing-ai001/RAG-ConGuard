@@ -1,0 +1,150 @@
+{
+  "split": "clean_val",
+  "methods": {
+    "B0": {
+      "n": 300,
+      "asr": 0.0,
+      "accuracy": 0.0,
+      "refusal": 0.27,
+      "other": 0.73,
+      "asr_nonrefusal": 0.0,
+      "accuracy_nonrefusal": 0.0,
+      "cnt": {
+        "attack_success": 0,
+        "correct": 0,
+        "refusal": 81,
+        "other": 219
+      },
+      "clean_refusal": 0.27,
+      "benign_mis_filter": 0.0
+    },
+    "G0": {
+      "n": 300,
+      "asr": 0.0,
+      "accuracy": 0.0,
+      "refusal": 0.3167,
+      "other": 0.6833,
+      "asr_nonrefusal": 0.0,
+      "accuracy_nonrefusal": 0.0,
+      "cnt": {
+        "attack_success": 0,
+        "correct": 0,
+        "refusal": 95,
+        "other": 205
+      },
+      "clean_refusal": 0.3167,
+      "benign_mis_filter": 0.106
+    },
+    "G2": {
+      "n": 300,
+      "asr": 0.0,
+      "accuracy": 0.0,
+      "refusal": 0.2933,
+      "other": 0.7067,
+      "asr_nonrefusal": 0.0,
+      "accuracy_nonrefusal": 0.0,
+      "cnt": {
+        "attack_success": 0,
+        "correct": 0,
+        "refusal": 88,
+        "other": 212
+      },
+      "clean_refusal": 0.2933,
+      "benign_mis_filter": 0.1438
+    }
+  },
+  "retrieval": {
+    "asr@5": 0.01,
+    "avg_poisoned_top5": 0.017,
+    "n_queries": 300
+  },
+  "paired_bootstrap_vs_B0": {
+    "B0": {
+      "asr": {
+        "mean_diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_trials": 1000,
+        "key": "asr"
+      },
+      "accuracy": {
+        "mean_diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_trials": 1000,
+        "key": "accuracy"
+      },
+      "refusal": {
+        "mean_diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_trials": 1000,
+        "key": "refusal"
+      }
+    },
+    "G0": {
+      "asr": {
+        "mean_diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_trials": 1000,
+        "key": "asr"
+      },
+      "accuracy": {
+        "mean_diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_trials": 1000,
+        "key": "accuracy"
+      },
+      "refusal": {
+        "mean_diff": 0.0467,
+        "ci95": [
+          0.0233,
+          0.07
+        ],
+        "n_trials": 1000,
+        "key": "refusal"
+      }
+    },
+    "G2": {
+      "asr": {
+        "mean_diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_trials": 1000,
+        "key": "asr"
+      },
+      "accuracy": {
+        "mean_diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_trials": 1000,
+        "key": "accuracy"
+      },
+      "refusal": {
+        "mean_diff": 0.0233,
+        "ci95": [
+          0.0033,
+          0.0433
+        ],
+        "n_trials": 1000,
+        "key": "refusal"
+      }
+    }
+  }
+}

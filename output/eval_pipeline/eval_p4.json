@@ -1,0 +1,38 @@
+{
+  "rounds": [
+    {
+      "round": 0,
+      "detector": "rule",
+      "detect_auc": 0.8861111111111111,
+      "escape_a": 0.0,
+      "escape_b": 0.0,
+      "escape_c": 0.0,
+      "train_pool": 12
+    },
+    {
+      "round": 1,
+      "detector": "mlp",
+      "detect_auc": 0.8861111111111111,
+      "escape_a": 0.0,
+      "escape_b": 0.0,
+      "escape_c": 0.0,
+      "train_pool": 24
+    },
+    {
+      "round": 2,
+      "detector": "mlp",
+      "detect_auc": 0.425,
+      "escape_a": 1.0,
+      "escape_b": 1.0,
+      "escape_c": 1.0,
+      "train_pool": 89
+    }
+  ],
+  "tau": 0.5,
+  "dataset": [
+    "nq",
+    "hotpotqa",
+    "msmarco"
+  ],
+  "pool": 89
+}

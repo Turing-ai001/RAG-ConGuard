@@ -1,0 +1,7 @@
+{
+  "name": "msmarco",
+  "corpus": "data/raw/msmarco_corpus.jsonl",
+  "queries": "data/raw/msmarco_queries.jsonl",
+  "poisoned": "data/poisoned/msmarco.json",
+  "kb": "msmarco_kb"
+}

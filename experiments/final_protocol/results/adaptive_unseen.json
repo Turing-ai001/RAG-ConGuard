@@ -1,0 +1,10 @@
+{
+  "family": "unseen",
+  "detector": "final_seen_mlp",
+  "val_detect_auc": 0.8647,
+  "val_escape": {
+    "d": 0.0,
+    "e": 0.0,
+    "f": 0.0
+  }
+}

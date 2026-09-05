@@ -1,0 +1,10 @@
+{
+  "embedder": "BAAI/bge-base-en-v1.5",
+  "nli": "cross-encoder/nli-deberta-v3-base",
+  "generator": "Qwen/Qwen2.5-7B-Instruct",
+  "generator_dtype": "fp16",
+  "generator_temperature": 0.0,
+  "generator_max_new_tokens": 128,
+  "nli_threshold": 0.7,
+  "judge_fusion_alpha": 0.3
+}

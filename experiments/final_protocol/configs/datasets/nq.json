@@ -1,0 +1,7 @@
+{
+  "name": "nq",
+  "corpus": "data/raw/nq_corpus.jsonl",
+  "queries": "data/raw/nq_queries.jsonl",
+  "poisoned": "data/poisoned/nq.json",
+  "kb": "nq_kb"
+}

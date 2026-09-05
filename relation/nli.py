@@ -27,7 +27,8 @@ except Exception:  # pragma: no cover
 from config import DEVICE, NUMERIC_CONFLICT_HEURISTIC
 from relation.types import NLI_LABELS, NLI_TO_RELATION, Relation, RelationType
 
-DEFAULT_NLI_MODEL = "cross-encoder/nli-deberta-v3-base"
+# 可用 HF_NLI_MODEL 环境变量覆盖（本地缓存路径或替代模型；服务器上指向 models_cache）
+DEFAULT_NLI_MODEL = os.environ.get("HF_NLI_MODEL", "cross-encoder/nli-deberta-v3-base")
 
 
 @dataclass

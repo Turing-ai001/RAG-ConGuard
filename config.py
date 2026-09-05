@@ -6,6 +6,13 @@ RAG 项目全局配置 —— 路径、模型、超参数全部集中在这一�
 import os
 from pathlib import Path
 
+# 线程数限制（必须在 numpy/torch import 前设置）：
+# AutoDL 型裸机 nproc 可达 100+，OpenBLAS/FAISS 默认拿满全部核，
+# 大任务上易线程颠簸/死锁（encode 完成后 CPU 0% 挂死）。限 16 核即可。
+for _v in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS",
+           "NUMEXPR_NUM_THREADS"):
+    os.environ.setdefault(_v, "16")
+
 ROOT = Path(__file__).resolve().parent
 
 # ================= 路径 =================
@@ -69,6 +76,13 @@ NUMERIC_CONFLICT_HEURISTIC = True
 #   alpha * s_NLI + (1 - alpha) * s_LLM   （alpha = NLI 侧权重）
 # 极性/类型以 LLM 判定为准（NLI 低置信时类型为 UNRELATED）。
 NLI_LLM_FUSION_ALPHA = 0.3
+
+# ================= P2 联盟反事实（2026-08-24） =================
+P2_GT_PURITY = 0.85          # 联盟检测判定阈值：纯度 >= 该值视为"疑似投毒联盟"
+P2_MIN_COALITION_SIZE = 2    # 有效联盟大小下限（孤立单 claim 不算联盟）
+P2_REFUTE_WEIGHT = 2.0       # 信任传播：反驳边惩罚权重（>1 加重，被反驳压制更强）
+P2_TRUST_ITERS = 4           # 信任传播迭代次数
+P2_IMPACT_TAUS = [0.0, 0.02, 0.05, 0.10, 0.15, 0.20, 0.30]  # 防御模拟阈值网格（相对影响）
 
 # ================= P1 里程碑指标（验收口径，2026-08-19 修订） =================
 # 原"给定 query，NLI 准确率 > 85%"作废：MNLI 模型在长文本 claim + 数值冲突的

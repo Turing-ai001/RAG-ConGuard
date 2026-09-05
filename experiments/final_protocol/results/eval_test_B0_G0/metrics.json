@@ -1,0 +1,100 @@
+{
+  "split": "test",
+  "methods": {
+    "B0": {
+      "n": 60,
+      "asr": 0.8333,
+      "accuracy": 0.1,
+      "refusal": 0.0167,
+      "other": 0.05,
+      "asr_nonrefusal": 0.8475,
+      "accuracy_nonrefusal": 0.1017,
+      "cnt": {
+        "attack_success": 50,
+        "correct": 6,
+        "refusal": 1,
+        "other": 3
+      }
+    },
+    "G0": {
+      "n": 60,
+      "asr": 0.2667,
+      "accuracy": 0.3167,
+      "refusal": 0.3667,
+      "other": 0.05,
+      "asr_nonrefusal": 0.4211,
+      "accuracy_nonrefusal": 0.5,
+      "cnt": {
+        "attack_success": 16,
+        "correct": 19,
+        "refusal": 22,
+        "other": 3
+      }
+    }
+  },
+  "retrieval": {
+    "asr@5": 1.0,
+    "avg_poisoned_top5": 3.817,
+    "n_queries": 60
+  },
+  "paired_bootstrap_vs_B0": {
+    "B0": {
+      "asr": {
+        "mean_diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_trials": 1000,
+        "key": "asr"
+      },
+      "accuracy": {
+        "mean_diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_trials": 1000,
+        "key": "accuracy"
+      },
+      "refusal": {
+        "mean_diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_trials": 1000,
+        "key": "refusal"
+      }
+    },
+    "G0": {
+      "asr": {
+        "mean_diff": -0.5667,
+        "ci95": [
+          -0.7,
+          -0.4333
+        ],
+        "n_trials": 1000,
+        "key": "asr"
+      },
+      "accuracy": {
+        "mean_diff": 0.2167,
+        "ci95": [
+          0.0833,
+          0.35
+        ],
+        "n_trials": 1000,
+        "key": "accuracy"
+      },
+      "refusal": {
+        "mean_diff": 0.35,
+        "ci95": [
+          0.2333,
+          0.4667
+        ],
+        "n_trials": 1000,
+        "key": "refusal"
+      }
+    }
+  }
+}

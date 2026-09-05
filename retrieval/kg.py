@@ -15,10 +15,13 @@ P0 目标：多视角检索中的"KG 视角"真实可用，且不依赖外部图
 """
 from __future__ import annotations
 
-import re
 import math
+import multiprocessing as mp
+import re
 from collections import defaultdict
 from typing import Protocol
+
+_N_WORKERS = 16   # 全量构建：per-doc 实体抽取是 7 个正则扫描，并行化
 
 # ================= 实体抽取（规则版） =================
 
@@ -186,6 +189,19 @@ class KGStore(Protocol):
         ...
 
 
+def _extract_doc_worker(text: str, title: str):
+    """单文档抽取（进程池 worker 用，无状态、可 pickle）：
+    实体（title 权重 ×2）+ 三元组（head/tail/rel 一并入实体列表）。"""
+    ents = extract_entities(text)
+    if title:
+        title_ents = extract_entities(title)
+        ents = ents + title_ents + title_ents         # 标题实体出现两次 = 权重 ×2
+    triples = extract_triples(text)
+    for h, rel, t in triples:
+        ents.append(h); ents.append(t); ents.append(f"rel:{rel}")
+    return ents, triples
+
+
 class EntityKGStore:
     """实体倒排 + 规则三元组的 KG 视角实现（不依赖外部图谱，可独立持久化）。"""
 
@@ -204,16 +220,15 @@ class EntityKGStore:
               titles: list[str] | None = None) -> None:
         """doc_ids/texts/titles 对齐；title 实体权重翻倍（标题实体更可靠）。"""
         titles = titles or [""] * len(doc_ids)
-        for doc_id, text, title in zip(doc_ids, texts, titles):
-            ents = extract_entities(text)
-            if title:
-                title_ents = extract_entities(title)
-                # 标题实体出现两次 = 权重 ×2
-                ents = ents + title_ents + title_ents
-            for h, rel, t in extract_triples(text):
-                ents += [h, t, f"rel:{rel}"]
-                self.triples.append((h, rel, t))
+        # 全量 60 万文档：multiprocessing.starmap 在超大量 IPC 队列下实测死锁
+        # （无报错、CPU 时间停增）；串行版本可靠，代价是构建慢几分钟。
+        # 每 50000 条打点进度，可观测。
+        for i, (doc_id, text, title) in enumerate(zip(doc_ids, texts, titles)):
+            ents, triples = _extract_doc_worker(text, title)
             self.index.add_doc(doc_id, ents)
+            self.triples.extend(triples)
+            if (i + 1) % 50000 == 0:
+                print(f"[KG] {i + 1}/{len(doc_ids)} docs indexed", flush=True)
 
     # ---------- 检索 ----------
     def extract_query_entities(self, query: str) -> list[str]:

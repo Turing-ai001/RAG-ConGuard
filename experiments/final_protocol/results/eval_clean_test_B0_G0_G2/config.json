@@ -1,0 +1,15 @@
+{
+  "protocol": "final_protocol v1.0",
+  "split": "clean_test",
+  "methods": [
+    "B0",
+    "G0",
+    "G2"
+  ],
+  "datasets": [
+    "nq",
+    "hotpotqa",
+    "msmarco"
+  ],
+  "seed": 20260825
+}

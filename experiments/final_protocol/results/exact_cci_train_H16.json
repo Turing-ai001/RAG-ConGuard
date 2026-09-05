@@ -1,0 +1,68 @@
+{
+  "H": 16,
+  "n_coalitions": 99,
+  "nq|size3|poisonTrue": {
+    "n": 9,
+    "rho_control_vs_exact": 0.6167,
+    "rho_impact_vs_exact": 0.6167
+  },
+  "nq|size2|poisonTrue": {
+    "n": 10,
+    "rho_control_vs_exact": 0.3865,
+    "rho_impact_vs_exact": 0.3865
+  },
+  "nq|size4|poisonTrue": {
+    "n": 16,
+    "rho_control_vs_exact": -0.0692,
+    "rho_impact_vs_exact": -0.0692
+  },
+  "hotpotqa|size4|poisonTrue": {
+    "n": 11,
+    "rho_control_vs_exact": 0.0273,
+    "rho_impact_vs_exact": 0.0273
+  },
+  "hotpotqa|size2|poisonTrue": {
+    "n": 6,
+    "rho_control_vs_exact": -0.2571,
+    "rho_impact_vs_exact": -0.2571
+  },
+  "hotpotqa|size3|poisonTrue": {
+    "n": 3,
+    "rho_control_vs_exact": -1.0,
+    "rho_impact_vs_exact": -1.0
+  },
+  "msmarco|size4|poisonTrue": {
+    "n": 9,
+    "rho_control_vs_exact": 0.5833,
+    "rho_impact_vs_exact": 0.5833
+  },
+  "msmarco|size2|poisonTrue": {
+    "n": 7,
+    "rho_control_vs_exact": -0.8929,
+    "rho_impact_vs_exact": -0.8929
+  },
+  "msmarco|size4|poisonFalse": {
+    "n": 3,
+    "rho_control_vs_exact": 0.5,
+    "rho_impact_vs_exact": 0.5
+  },
+  "msmarco|size3|poisonTrue": {
+    "n": 14,
+    "rho_control_vs_exact": -0.3011,
+    "rho_impact_vs_exact": -0.3011
+  },
+  "msmarco|size2|poisonFalse": {
+    "n": 5,
+    "rho_control_vs_exact": 0.3591,
+    "rho_impact_vs_exact": 0.3591
+  },
+  "msmarco|size3|poisonFalse": {
+    "n": 3,
+    "rho_control_vs_exact": -0.5,
+    "rho_impact_vs_exact": -0.5
+  },
+  "overall": {
+    "rho_control_vs_exact": 0.3927,
+    "rho_impact_vs_exact": 0.3927
+  }
+}

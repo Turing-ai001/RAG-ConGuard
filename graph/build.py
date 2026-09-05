@@ -5,6 +5,10 @@
     unsigned    无符号图：去掉符号（只留"是否相关"），联盟 = 全部相关边连通分量
     similarity  纯相似度图：cosine >= τ 建无向边（无类型无符号）
 
+第五种变体（2026-08-25，P2 主口径）：
+    signed_semantic  双通道有符号图：NLI 符号边 ∪ BGE 语义边（cosine>=τ 标 SUPPORT）
+    —— 解决投毒同源文档在 NLI 下互不连边（高置信 neutral）导致的图稀疏问题
+
 联盟发现（coalition detection）：
     正边连通分量 = 支持联盟（相互印证的事实组）；
     联盟内负边（矛盾/反驳）数量 = 该联盟的内部冲突信号。
@@ -70,7 +74,7 @@ class ClaimGraph:
         """联盟发现（连通分量）：
         signed：只用正边（支持/蕴含）→ 支持联盟；
         unsigned：用全部相关边（正+负）→ 混合连通块；
-        similarity：外部构建时传 similarity 边（本方法用 rel_edges 近似）。
+        similarity / signed_semantic：外部构建时把语义边并入 pos_edges（见 build 处）。
         """
         edges = self.pos_edges if mode == "signed" else self.rel_edges
         return _connected_components(self.claim_ids, edges)
@@ -123,10 +127,7 @@ class ClaimGraph:
 # ---------- 纯相似度图（消融第三种变体） ----------
 def similarity_graph(claims: list[dict], embedder, threshold: float = 0.6) -> ClaimGraph:
     """BGE cosine >= τ 建无向边（self 除外），类型标 SUPPORT（仅连通性用）。"""
-    texts = [c["text"] for c in claims]
-    embs = embedder.encode(texts)
-    embs = embs / (np.linalg.norm(embs, axis=1, keepdims=True) + 1e-9)
-    sim = embs @ embs.T
+    sim = _cosine_matrix(claims, embedder)
     relations: list[Relation] = []
     ids = [c["claim_id"] for c in claims]
     for i, j in itertools.combinations(range(len(ids)), 2):
@@ -134,3 +135,29 @@ def similarity_graph(claims: list[dict], embedder, threshold: float = 0.6) -> Cl
             relations.append(Relation(ids[i], ids[j], RelationType.SUPPORT,
                                       float(sim[i, j]), provenance="similarity"))
     return ClaimGraph(claims, relations)
+
+
+def signed_semantic_graph(claims: list[dict], nli_relations: list[Relation],
+                          embedder, threshold: float = 0.85) -> ClaimGraph:
+    """双通道有符号图（P2 主口径，2026-08-25）。
+
+    NLI 符号边（支持/反驳，来自 RelationExtractor）∪ 语义边（BGE cosine>=τ，
+    标 SUPPORT，provenance="semantic"）。解决投毒同源文档在 NLI 下互不连边
+    （高置信 neutral）导致的图稀疏问题——同源投毒语义高度相似，双通道必成联盟。
+    """
+    sim = _cosine_matrix(claims, embedder)
+    ids = [c["claim_id"] for c in claims]
+    semantic = [
+        Relation(ids[i], ids[j], RelationType.SUPPORT, float(sim[i, j]),
+                 provenance="semantic")
+        for i, j in itertools.combinations(range(len(ids)), 2)
+        if sim[i, j] >= threshold
+    ]
+    return ClaimGraph(claims, list(nli_relations) + semantic)
+
+
+def _cosine_matrix(claims: list[dict], embedder) -> np.ndarray:
+    texts = [c["text"] for c in claims]
+    embs = embedder.encode(texts)
+    embs = embs / (np.linalg.norm(embs, axis=1, keepdims=True) + 1e-9)
+    return embs @ embs.T

@@ -1,0 +1,17 @@
+{
+  "produced": "scripts/make_figs.py",
+  "raw_data": {
+    "fig3": [
+      "output/eval_pipeline/ablation_signed.json (summary keys are SUMS over 90 rows; divided by n=90 matches reported per-query means)",
+      "output/eval_pipeline/eval_p3.json risk_auc"
+    ],
+    "fig4": [
+      "output/eval_pipeline/eval_p3.json defended[tau=*]{asr,correct,refuse}, baseline.asr"
+    ]
+  },
+  "transformations": [
+    "ablation summary divided by n=90",
+    "fig4 plots measured values, no smoothing"
+  ],
+  "missing": "n/a"
+}

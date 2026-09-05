@@ -1,0 +1,9 @@
+\contentsline {section}{\numberline {1}编译环境自检}{1}{section.1}%
+\contentsline {section}{\numberline {2}中文与英文混排测试}{1}{section.2}%
+\contentsline {section}{\numberline {3}数学公式测试}{2}{section.3}%
+\contentsline {section}{\numberline {4}表格测试}{2}{section.4}%
+\contentsline {section}{\numberline {5}插图测试}{2}{section.5}%
+\contentsline {subsection}{\numberline {5.1}TikZ 绘图（无需外部图片文件）}{2}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}外部图片（可选验证）}{4}{subsection.5.2}%
+\contentsline {section}{\numberline {6}列表与交叉引用测试}{4}{section.6}%
+\contentsline {section}{\numberline {7}参考文献测试}{4}{section.7}%

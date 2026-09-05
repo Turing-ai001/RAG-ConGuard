@@ -1,0 +1,11 @@
+{
+  "B0": {"type": "vanilla", "note": "no defense"},
+  "B1": {"type": "rel_filter", "params": {"tau_rel": 0.30}},
+  "B2": {"type": "dup_filter", "params": {"tau_dup": 0.85}},
+  "B4": {"type": "nli_consistency", "note": "ReliabilityRAG-style, difference recorded"},
+  "B5": {"type": "trustrag_style", "status": "phase4"},
+  "B6": {"type": "doc_loo", "params": {"tau_loo": 0.10}},
+  "G0": {"type": "conguard", "selector": "s0", "params": {"tau": 0.25}},
+  "G1": {"type": "conguard", "selector": "s1", "params": {"tau": 0.25}},
+  "G2": {"type": "conguard", "selector": "s2", "params": {"lam": 0.6}}
+}

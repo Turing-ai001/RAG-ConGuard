@@ -8,6 +8,7 @@ KB = 原始语料 + 投毒文档，统一 doc_id。每个 KB 持久化到 data/i
 """
 import json
 import pickle
+import time
 from pathlib import Path
 
 from config import INDEX_DIR, POISONED_DIR, TOP_K
@@ -61,12 +62,19 @@ class KnowledgeBase:
 
         doc_ids = [e["doc_id"] for e in doc_entries]
         texts = [e["text"] for e in doc_entries]
+        t0 = time.perf_counter()
         self.vector_store = VectorStore(embedder.encode([""]).shape[1])
-        self.vector_store.add(doc_ids, embedder.encode(texts, show_progress=True))
+        embs = embedder.encode(texts, show_progress=True)
+        print(f"[KB] embed done {len(texts)} docs in "
+              f"{time.perf_counter() - t0:.0f}s; FAISS add ...", flush=True)
+        self.vector_store.add(doc_ids, embs)
+        print(f"[KB] faiss done in {time.perf_counter() - t0:.0f}s; BM25 ...", flush=True)
         self.bm25 = BM25Index(doc_ids, texts)
+        print(f"[KB] bm25 done in {time.perf_counter() - t0:.0f}s; KG ...", flush=True)
         # KG 视角：实体倒排 + 规则三元组（语料 title 字段参与建索引）
         titles = [str(e.get("meta", {}).get("title", "")) for e in doc_entries]
         self.kg = kg_store or EntityKGStore(doc_ids, texts, titles)
+        print(f"[KB] kg done in {time.perf_counter() - t0:.0f}s", flush=True)
 
     # ---------- 多视角检索 ----------
     def search(self, query: str, top_k: int = TOP_K, query_entities: list[str] | None = None) -> list[dict]:
@@ -95,15 +103,18 @@ class KnowledgeBase:
         (root / "bm25.pkl").write_bytes(pickle.dumps(self.bm25))
         if hasattr(self.kg, "index"):   # EntityKGStore 才持久化；EmptyKG 等无状态实现跳过
             (root / "kg.pkl").write_bytes(pickle.dumps(self.kg))
-        print(f"[KB] saved to {root}")
+        print(f"[KB] saved to {root}", flush=True)
         return root
 
     @classmethod
     def load(cls, name: str, embedder) -> "KnowledgeBase":
         root = INDEX_DIR / name
+        # 注意：不能用 splitlines()！它会按  / 等 Unicode 行分隔符切行，
+        # 语料 text 中的此类字符会把一行 JSON 切成两半（实测 msmarco 崩溃点）。
+        # 只按 \n 切，与写入时 json.dumps 的 \n 连接一致。
         entries = [
             json.loads(line)
-            for line in (root / "docs.jsonl").read_text(encoding="utf-8").splitlines()
+            for line in (root / "docs.jsonl").read_text(encoding="utf-8").split("\n")
             if line.strip()
         ]
         kb = cls.__new__(cls)
@@ -115,7 +126,7 @@ class KnowledgeBase:
         kb.kg = (pickle.loads(kg_path.read_bytes()) if kg_path.exists() else default_kg_store())
         kb.vector_store = VectorStore.load(root / "index.faiss", root / "ids.json")
         kb.bm25 = pickle.loads((root / "bm25.pkl").read_bytes())
-        print(f"[KB] loaded {name}: {len(entries)} docs")
+        print(f"[KB] loaded {name}: {len(entries)} docs", flush=True)
         return kb
 
 

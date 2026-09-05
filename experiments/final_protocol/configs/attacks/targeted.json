@@ -1,0 +1,8 @@
+{
+  "id": "targeted_5per_query",
+  "name": "PoisonedRAG targeted poisoning",
+  "docs_per_query": 5,
+  "queries_per_dataset": 100,
+  "injection": "500 poisoned passages per 600k corpus (~0.08%)",
+  "source": "data/poisoned/{ds}.json (from PoisonedRAG benchmark)"
+}

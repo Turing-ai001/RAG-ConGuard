@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG-ConGuard 阶段性进展汇报 · 2026-09-01</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --ink:#1a1a18; --sub:#5F5E5A; --hint:#888780;
+    --line:rgba(0,0,0,.12); --line2:rgba(0,0,0,.06);
+    --bg:#ffffff; --surf:#F7F6F3;
+    --red:#A32D2D; --redbg:#FCEBEB;
+    --blue:#185FA5; --bluebg:#E6F1FB;
+    --green:#3B6D11; --greenbg:#EAF3DE;
+    --amber:#854F0B; --amberbg:#FAEEDA;
+    --purple:#534AB7; --purplebg:#EEEDFE;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:40px 28px 64px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.7; font-size:15px;
+  }
+  .wrap{max-width:920px; margin:0 auto;}
+  header{border-bottom:1.5px solid var(--ink); padding-bottom:18px; margin-bottom:8px;}
+  h1{font-size:24px; font-weight:500; margin:0 0 6px; letter-spacing:.2px;}
+  .meta{font-size:13px; color:var(--sub);}
+  .lead{
+    font-size:15px; color:var(--sub); margin:18px 0 26px; padding:14px 18px;
+    background:var(--surf); border-left:3px solid var(--purple); border-radius:0 8px 8px 0;
+  }
+  h2{
+    font-size:17px; font-weight:500; margin:38px 0 14px; padding-bottom:7px;
+    border-bottom:0.5px solid var(--line);
+  }
+  h2 .num{color:var(--hint); font-weight:400; margin-right:8px;}
+  h3{font-size:14px; font-weight:500; margin:20px 0 8px; color:var(--ink);}
+  p{margin:9px 0;}
+  ul{margin:8px 0; padding-left:20px;}
+  li{margin:5px 0;}
+
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin:18px 0;}
+  .card{background:var(--surf); border-radius:10px; padding:14px 16px;}
+  .card .lab{font-size:12px; color:var(--sub); margin-bottom:4px;}
+  .card .val{font-size:26px; font-weight:500; line-height:1.15;}
+  .card .note{font-size:12px; color:var(--hint); margin-top:4px;}
+  .card.r .val{color:var(--red);} .card.b .val{color:var(--blue);}
+  .card.g .val{color:var(--green);} .card.a .val{color:var(--amber);}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px;}
+  th{text-align:left; font-weight:500; padding:9px 10px; border-bottom:1px solid var(--line); color:var(--sub); font-size:13px;}
+  td{padding:9px 10px; border-bottom:0.5px solid var(--line2);}
+  tr.ours td{background:var(--purplebg);}
+  tr.hl td{background:var(--amberbg);}
+  td.n{font-variant-numeric:tabular-nums;}
+  .tag{display:inline-block; font-size:11px; padding:1px 7px; border-radius:20px; border:0.5px solid var(--line); color:var(--sub);}
+
+  .box{border:0.5px solid var(--line); border-radius:10px; padding:14px 18px; margin:14px 0;}
+  .box.warn{background:var(--amberbg); border-color:rgba(133,79,11,.25);}
+  .box.good{background:var(--greenbg); border-color:rgba(59,109,17,.25);}
+  .box.info{background:var(--bluebg); border-color:rgba(24,95,165,.25);}
+  .box h3{margin-top:0;}
+  .box p:last-child{margin-bottom:0;}
+
+  .chartbox{border:0.5px solid var(--line); border-radius:10px; padding:16px; margin:16px 0;}
+  .legend{display:flex; flex-wrap:wrap; gap:16px; margin-bottom:12px; font-size:12px; color:var(--sub);}
+  .legend span{display:flex; align-items:center; gap:5px;}
+  .sw{width:10px; height:10px; border-radius:2px; display:inline-block;}
+
+  .steps{margin:14px 0;}
+  .step{display:flex; gap:14px; padding:12px 0; border-bottom:0.5px solid var(--line2);}
+  .step:last-child{border-bottom:none;}
+  .wk{
+    flex:0 0 78px; font-size:12px; color:var(--sub); padding-top:2px;
+    font-variant-numeric:tabular-nums;
+  }
+  .step .body{flex:1;}
+  .step .body b{font-weight:500;}
+  .step .body .d{font-size:13px; color:var(--sub); margin-top:2px;}
+
+  .foot{margin-top:40px; padding-top:16px; border-top:0.5px solid var(--line); font-size:12px; color:var(--hint);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12.5px; background:var(--surf); padding:1px 5px; border-radius:4px;}
+
+  @media print{
+    body{padding:0; font-size:11.5pt;}
+    h2{page-break-after:avoid;}
+    .box,.chartbox,table,.step{page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>RAG-ConGuard 阶段性进展汇报</h1>
+  <div class="meta">汇报人：锦松 &nbsp;·&nbsp; 2026-09-01 &nbsp;·&nbsp; 状态：实验收尾完成，进入论文改写与投稿阶段</div>
+</header>
+
+<p class="lead">
+核心假设 <b>Unsupported Influence</b>：协同投毒不是一个「可疑文档」，而是一个<b>证据联盟</b> —— 内部互相支持、外部缺乏独立佐证、却对生成结果有不成比例的控制力。本阶段完成了系统实现、<b>实验体系审计与重建</b>，以及全部对照实验的补齐，得到一组可信、可复现的主结果。
+</p>
+
+<div class="cards">
+  <div class="card r"><div class="lab">无防御基线 ASR</div><div class="val">0.833</div><div class="note">test n=60，三数据集冻结</div></div>
+  <div class="card g"><div class="lab">可用性操作点 G1</div><div class="val">0.583</div><div class="note">拒答仅 6.7%，准确率 0.300</div></div>
+  <div class="card b"><div class="lab">强保护操作点 G0</div><div class="val">0.217</div><div class="note">拒答 40%，准确率 0.333</div></div>
+  <div class="card a"><div class="lab">自适应攻击逃脱率</div><div class="val">0</div><div class="note">含未见变体族，AUC 0.865</div></div>
+</div>
+
+<h2><span class="num">一</span>本阶段完成的四项实质工作</h2>
+
+<h3>1. 全链路系统实现（6 模块贯通）</h3>
+<p>多视角检索 → Claim 提取 → 有符号证据图 → 联盟发现 → 联盟级反事实影响 → 风险约束安全上下文选择。攻击者在环训练贯穿后三个模块。系统在 AutoDL 4090 上可复现运行，中间产物全部落盘。</p>
+
+<h3>2. 实验体系审计与重建（本轮最关键进展）</h3>
+<p>对既有实验做了全面审计，识别出 7 个硬伤并逐一定位根因。其中最致命的是：<b>旧结果的低 ASR 是靠「拒答 100%」换来的</b>，即防御在所有查询上直接弃答，等于没有防御能力。根因被定位到两个具体缺陷：</p>
+<ul>
+  <li><b>标签定义错误</b>：原用 <code>purity = max(投毒比, 良性比)</code> 做正例标签，导致「全良性联盟」也被标为正例（训练 409 个联盟只产生 8 个负例），学习器对一切输出高分 → 任意阈值下全部拒答。已改为 <code>poisoned_ratio ≥ 0.8</code>，并以干净查询联盟作为负例池。</li>
+  <li><b>选择器无保留删除</b>：整联盟剔除策略在 top-5 被同一联盟控制时清空全部上下文。已新增 S2 贪婪重建（保留下限 λ）。</li>
+</ul>
+<p>在此基础上建立并冻结实验协议 <b>v1.2</b>：统一 train/val/test split、消除推理期 oracle 泄漏、逐查询互斥状态标注、paired bootstrap 统计检验。</p>
+
+<div class="box good">
+  <h3>这一项应当作为进展主动汇报</h3>
+  <p>发现问题并修复，比拿到漂亮数字更能说明工作的严谨性。旧协议产物已全部作废、不可引用，当前所有结论均来自冻结协议 <code>experiments/final_protocol/results/</code>。</p>
+</div>
+
+<h3>3. 强基线与对照实验补齐</h3>
+<ul>
+  <li><b>强基线</b>：新增 TrustRAG 原版复刻、逐文档 LOO 防御、NLI 一致性（ReliabilityRAG 风格），与本文方法同检索器、同语料、同 split、同生成模型。</li>
+  <li><b>干净查询效用</b>：clean_test 900 条，测量拒答率与良性误滤率。</li>
+  <li><b>跨大语言模型</b>：Qwen2.5-7B / Llama-3.1-8B / Mistral-7B-v0.3。</li>
+  <li><b>自适应攻防</b>：3 轮攻击者在环训练 + 3 组未见变体族（held-out）。</li>
+</ul>
+
+<h3>4. 机制诊断实验 E8</h3>
+<p>验证「逐文档归因在冗余投毒下失效」这一核心动机，采用 target-free 口径（不使用攻击目标答案）。</p>
+
+<h2><span class="num">二</span>主实验结果</h2>
+
+<p>测试集 <b>n=60</b>（每数据集 20 条，三层冻结 split），逐查询互斥四态判定，配对 bootstrap 1000 次。攻击面：检索 asr@5 = 1.00，top-5 平均含 <b>3.82 篇</b>投毒文档 —— 这是极端攻击密度。</p>
+
+<table>
+  <thead><tr><th>方法</th><th>类型</th><th>ASR ↓</th><th>准确率 ↑</th><th>拒答率</th><th>ΔASR vs 无防御</th></tr></thead>
+  <tbody>
+    <tr><td>B4 NLI 一致性</td><td><span class="tag">发布级</span></td><td class="n">0.867</td><td class="n">0.083</td><td class="n">0.033</td><td class="n">+0.033</td></tr>
+    <tr><td>B0 无防御</td><td><span class="tag">基线</span></td><td class="n">0.833</td><td class="n">0.100</td><td class="n">0.017</td><td class="n">—</td></tr>
+    <tr><td>B1 相关性过滤</td><td><span class="tag">逐文档</span></td><td class="n">0.833</td><td class="n">0.100</td><td class="n">0.017</td><td class="n">0.000</td></tr>
+    <tr><td>B2 重复过滤</td><td><span class="tag">逐文档</span></td><td class="n">0.750</td><td class="n">0.200</td><td class="n">0.017</td><td class="n">−0.083</td></tr>
+    <tr><td>B6 逐文档 LOO</td><td><span class="tag">逐文档</span></td><td class="n">0.650</td><td class="n">0.217</td><td class="n">0.067</td><td class="n">−0.183</td></tr>
+    <tr class="ours"><td><b>G1 可用性点</b>（本文）</td><td><span class="tag">联盟级</span></td><td class="n"><b>0.583</b></td><td class="n"><b>0.300</b></td><td class="n">0.067</td><td class="n"><b>−0.250</b></td></tr>
+    <tr class="ours"><td><b>G0 强保护点</b>（本文）</td><td><span class="tag">联盟级</span></td><td class="n"><b>0.217</b></td><td class="n"><b>0.333</b></td><td class="n">0.400</td><td class="n"><b>−0.617</b></td></tr>
+    <tr><td>B5 TrustRAG 复刻</td><td><span class="tag">发布级</span></td><td class="n">0.150</td><td class="n">0.333</td><td class="n">0.483</td><td class="n">−0.683</td></tr>
+  </tbody>
+</table>
+
+<p style="font-size:13px;color:var(--sub);">95% 置信区间（配对 bootstrap，vs B0）：G1 Δ=−0.250，CI [−0.367, −0.133]；G0 Δ=−0.617，CI [−0.717, −0.517]。两者均不跨 0。</p>
+
+<div class="chartbox">
+  <div class="legend">
+    <span><i class="sw" style="background:#A32D2D"></i>攻击成功率 ASR（越低越好）</span>
+    <span><i class="sw" style="background:#185FA5"></i>拒答率（越低越好）</span>
+    <span>G0 / G1 为本文方法的两个操作点</span>
+  </div>
+  <div style="position:relative;width:100%;height:300px;">
+    <canvas id="c1" role="img" aria-label="各方法攻击成功率与拒答率对比柱状图">B4 0.87/0.03，B0 0.83/0.02，B1 0.83/0.02，B2 0.75/0.02，B6 0.65/0.07，G1 0.58/0.07，G0 0.22/0.40，B5 0.15/0.48。</canvas>
+  </div>
+</div>
+
+<h3>三个必须一起讲的结论</h3>
+<ul>
+  <li><b>同拒答层位下联盟级优于逐文档</b>：在拒答 6.7% 这一层，G1 (0.583) 优于逐文档 LOO (0.650)、重复过滤 (0.750)；准确率同时从 0.100 提升到 0.300。</li>
+  <li><b>B4 倒挂，反向印证问题选得对</b>：NLI 一致性基线 ASR <b>0.867，反而高于无防御的 0.833</b>。原因是「一致的多数簇」恰恰就是投毒簇 —— 多数一致性推理在协同投毒下会主动帮攻击者。这是全文动机最强的反例证据。</li>
+  <li><b>与 TrustRAG 同级，但机制不同</b>：B5 的 ASR 0.150 低于 G0 的 0.217，但 B5 拒答更高（48.3% vs 40.0%），且其「防御」是让 LLM 自评估后直接改写答案（证据级入侵、不可审计），G0 是纯证据选择（可审计、可追溯）。这一对照应正面呈现，不回避。</li>
+</ul>
+
+<h2><span class="num">三</span>支撑性证据</h2>
+
+<h3>E8 稀释机制（核心动机，target-free 口径）</h3>
+<table>
+  <thead><tr><th>投毒组规模</th><th>组数</th><th>逐文档 LOO</th><th>联盟级删除</th><th>比值</th></tr></thead>
+  <tbody>
+    <tr><td>2 篇</td><td class="n">15</td><td class="n">0.353</td><td class="n">0.480</td><td class="n"><b>1.36×</b></td></tr>
+    <tr><td>3 篇</td><td class="n">8</td><td class="n">0.466</td><td class="n">0.714</td><td class="n"><b>1.53×</b></td></tr>
+    <tr><td>4 篇</td><td class="n">16</td><td class="n">0.521</td><td class="n">0.944</td><td class="n"><b>1.81×</b></td></tr>
+  </tbody>
+</table>
+<p>组规模增大时，单篇删除的影响被剩余成员稀释（慢增 0.353 → 0.521），而联盟级删除的控制力快速放大（0.480 → 0.944）。差距随规模单调扩大 —— 这是「逐文档归因无法处理冗余协同投毒」的直接数量证据。</p>
+
+<h3>跨大语言模型泛化（同 split、同参数）</h3>
+<table>
+  <thead><tr><th>生成模型</th><th>无防御 ASR</th><th>G0</th><th>G1</th><th>干净侧误滤</th></tr></thead>
+  <tbody>
+    <tr><td>Qwen2.5-7B</td><td class="n">0.833</td><td class="n">0.217 @ 40.0%</td><td class="n">0.583 @ 6.7%</td><td class="n">13.5%</td></tr>
+    <tr><td>Llama-3.1-8B</td><td class="n">0.650</td><td class="n">0.250 @ 41.7%</td><td class="n">0.550 @ 11.7%</td><td class="n">7.1%</td></tr>
+    <tr><td>Mistral-7B-v0.3</td><td class="n">0.883</td><td class="n">0.300 @ 33.3%</td><td class="n">0.650 @ 0.0%</td><td class="n">7.1%</td></tr>
+  </tbody>
+</table>
+<p>三个不同族模型的防御方向完全一致：强保护点压至 0.25–0.30，可用性点 0.55–0.65 且拒答极低。附带发现：Llama 天生更抗定向投毒，Mistral 最易被攻击（0.883）。</p>
+
+<h3>自适应攻防（攻击者在环）</h3>
+<table>
+  <thead><tr><th>轮次</th><th>检测器</th><th>val AUC</th><th>逃脱率 a / b / c</th></tr></thead>
+  <tbody>
+    <tr><td>round 0</td><td>规则</td><td class="n">0.886</td><td class="n">0.00 / 0.00 / 0.00</td></tr>
+    <tr><td>round 1</td><td>MLP</td><td class="n">0.812</td><td class="n">0.03 / 0.00 / 0.07</td></tr>
+    <tr><td>round 2</td><td>MLP</td><td class="n">0.837</td><td class="n">0.00 / 0.00 / 0.00</td></tr>
+    <tr class="hl"><td><b>未见变体族</b></td><td>最终 MLP</td><td class="n"><b>0.865</b></td><td class="n"><b>0.00 / 0.00 / 0.00</b></td></tr>
+  </tbody>
+</table>
+<p>训练中见过的变体与完全未参与训练的 d/e/f 族，逃脱率均为 0。</p>
+
+<h3>干净查询效用（clean_test，900 条）</h3>
+<p>无防御 Vanilla 本身就自带 <b>28.6% 拒答</b>（模型弃答基线）。防御的边际代价：G0 拒答 +3.3pp、良性误滤 8.7%；G1 拒答 +2.2pp、良性误滤 13.5%。效用保留良好。</p>
+
+<h2><span class="num">四</span>如实说明的三条限制</h2>
+
+<div class="box warn">
+  <p><b>1. 代理 CCI 与精确 CCI 仅中等相关（Spearman ρ ≈ 0.39）。</b>论文原先将影响形式化为生成分布的 JSD，实现使用的是「答案支持分数」近似。已实现精确版本（teacher-forced 对齐前缀 + 逐位置 JSD），与代理的相关性在 H=8/16/32 下稳定为 0.36 / 0.39 / 0.39。<b>结论：代理是有效的排序信号，但不是强代理，论文不得声称「CCI = JSD」，须改写为「证据侧近似 + 精确 CCI 对照分析」。</b></p>
+</div>
+
+<div class="box warn">
+  <p><b>2. 规则风险在端到端指标上略优于 MLP 学习器。</b>RuleRisk-S2 (λ=0.2) 为 0.533 / 0.350 @ 6.7% 拒答，略优于 MLP-G1 的 0.583 / 0.300。学习器的价值体现在判别能力（AUC 0.79–0.86 vs 规则的 0.32 系）与阈值自动化，而非端到端增益。这一点如实写入，不拔高。</p>
+</div>
+
+<div class="box warn">
+  <p><b>3. 高攻击密度下「强保护」与「低拒答」不可兼得。</b>本设置下 58% 的查询整个 top-5 被同一联盟控制，此时拒答是正确动作而非缺陷。因此论文给出两个操作点（G0 强保护 / G1 可用性），而非宣称单一最优。另：BEIR 当前快照不含 gold answer 文件，<b>clean answer accuracy 不可得</b>，效用只能以「良性误滤率」为代理，此限制如实标注。</p>
+</div>
+
+<h2><span class="num">五</span>下一步与时间表（目标：10 月前完成投稿）</h2>
+
+<div class="box info">
+  <h3>当前最重要的待办：论文—实验对齐</h3>
+  <p>英文初稿写于最终实验数据产出之前（相差约 12 小时），其中核心数字仍来自已作废的旧协议，且方法部分存在一处推理期 oracle 泄漏的表述（候选答案写成「使用攻击者指定答案」，与摘要声称的 target-free 矛盾）。<b>这是纯文字改写工作，1–2 天可完成，无需重跑任何实验。</b></p>
+</div>
+
+<div class="steps">
+  <div class="step"><div class="wk">第 1 周<br>9/01–9/07</div><div class="body">
+    <b>论文—实验对齐改写</b>
+    <div class="d">按冻结协议重写摘要与实验章节全部数字（A8 / E6 / E8 / E11 / E12 / CL3）；修正方法章节的 oracle 泄漏表述、联盟定义（补 Score(C) 精化）、学习器定位；重做 Tables &amp; Figures（fig3 / fig4）。</div>
+  </div></div>
+  <div class="step"><div class="wk">第 2 周<br>9/08–9/14</div><div class="body">
+    <b>定刊与排版</b>
+    <div class="d">确定 2–3 个 SCI 二区候选期刊，比对 scope 与页数限制；按目标模板排版；精修 Introduction 与 Related Work；核对参考文献。</div>
+  </div></div>
+  <div class="step"><div class="wk">第 3 周<br>9/15–9/21</div><div class="body">
+    <b>内部审读与修改</b>
+    <div class="d">请导师 / 同学通读一轮，收集意见并修改；图表转矢量高清；术语与重复率检查。</div>
+  </div></div>
+  <div class="step"><div class="wk">第 4 周<br>9/22–9/30</div><div class="body">
+    <b>终稿与提交</b>
+    <div class="d">语言润色、格式终检、cover letter、补充材料整理，完成投稿。</div>
+  </div></div>
+</div>
+
+<h3>需要导师决策 / 把关的两点</h3>
+<ul>
+  <li><b>目标期刊选择</b>：目前方向是 SCI 二区，具体刊物未定，希望老师推荐或 narrowing。</li>
+  <li><b>操作点的取舍</b>：论文是双点并列呈现（强保护 + 可用性），还是以可用性点为主、强保护点放附录？这会影响审稿人对「实用性」的观感。</li>
+</ul>
+
+<div class="foot">
+数据来源：<code>experiments/final_protocol/results/</code>（冻结协议 v1.2）· 权威解读：<code>FINAL_EXPERIMENT_REPORT.md</code> · 审计记录：<code>PROJECT_AUDIT.md</code><br>
+本报告不筛数、不修饰；负结果与限制全部保留。
+</div>
+
+</div>
+
+<script>
+(function(){
+  var vl={id:'vl',afterDatasetsDraw:function(c){var x=c.ctx;x.save();x.font='11px sans-serif';x.textAlign='center';x.fillStyle='#444441';
+    c.data.datasets.forEach(function(d,i){c.getDatasetMeta(i).data.forEach(function(b,j){x.fillText(d.data[j].toFixed(2),b.x,b.y-5);});});x.restore();}};
+  new Chart(document.getElementById('c1'),{type:'bar',plugins:[vl],
+    data:{labels:['B4 NLI一致性','B0 无防御','B1 相关性过滤','B2 重复过滤','B6 逐文档LOO','G1 可用性点','G0 强保护点','B5 TrustRAG'],
+      datasets:[{label:'ASR',data:[0.867,0.833,0.833,0.750,0.650,0.583,0.217,0.150],backgroundColor:'#A32D2D',borderRadius:3,barPercentage:.85},
+                {label:'拒答率',data:[0.033,0.017,0.017,0.017,0.067,0.067,0.400,0.483],backgroundColor:'#185FA5',borderRadius:3,barPercentage:.85}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+c.parsed.y.toFixed(3);}}}},
+      scales:{y:{beginAtZero:true,suggestedMax:1,grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:11},callback:function(v){return (v*100).toFixed(0)+'%';}}},
+              x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:45,minRotation:45,font:{size:11}}}}}});
+})();
+</script>
+</body>
+</html>

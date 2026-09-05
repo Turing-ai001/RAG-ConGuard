@@ -1,0 +1,316 @@
+% !TEX program = xelatex
+% !TEX encoding = UTF-8
+% ---------------------------------------------------------------
+%  LaTeX 编译环境测试文件
+%  编译方式（VSCode LaTeX Workshop 中任选一种）：
+%    1) 快捷键 Ctrl+Alt+B 编译，Ctrl+Alt+V 预览
+%    2) 左侧 TeX 面板 -> Build LaTeX project -> 选择 "xelatex" 配方
+%  命令行：xelatex -synctex=1 -interaction=nonstopmode test.tex
+% ---------------------------------------------------------------
+\documentclass[UTF8, a4paper, 11pt, fontset=fandol]{ctexart}
+
+% ---------- 页面与排版 ----------
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{indentfirst}          % 中文段落首行缩进
+\setlength{\parindent}{2em}
+\usepackage{setspace}
+\onehalfspacing                    % 1.5 倍行距，论文常用
+
+% ---------- 数学 ----------
+\usepackage{amsmath, amssymb, bm}
+
+% ---------- 图形表格 ----------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{caption}
+\captionsetup{font=small}
+
+% ---------- 其他 ----------
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc}
+\usepackage{iftex}                 % 引擎检测
+\usepackage[hidelinks, colorlinks=true, linkcolor=blue, citecolor=red]{hyperref}
+
+% ---------- 自定义命令：显示当前编译引擎 ----------
+\newcommand{\enginename}{%
+  \ifXeTeX Xe\LaTeX%
+  \else\ifPDFTeX pdf\LaTeX%
+  \else\ifLuaTeX Lua\LaTeX%
+  \else 未知引擎%
+  \fi\fi\fi}
+
+% ===============================================================
+\title{\textbf{LaTeX 编译环境测试文档}\\[4pt]
+       \large 中文 · 公式 · 表格 · 插图 · 交叉引用 · 参考文献}
+\author{锦松}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+本文件用于验证 \TeX\ Live 编译链路是否正常工作，覆盖中文排版、数学公式、
+表格、\textsc{TikZ} 插图、交叉引用与参考文献等常用功能。
+若本文件能顺利生成 PDF，说明 VSCode + \LaTeX\ Workshop + \TeX\ Live 环境配置正确。
+\end{abstract}
+
+\tableofcontents
+\bigskip
+
+% ===============================================================
+\section{编译环境自检}
+\label{sec:env}
+
+当前文档由 \textbf{\enginename} 引擎编译，编码为 UTF-8，
+中文字体使用 \texttt{ctex} 宏包的 \texttt{fandol} 字体集（\TeX\ Live 自带，无需系统字体）。
+若你更想使用 Windows 系统字体（如宋体、等线），把文档类选项改为
+\texttt{fontset=windows} 即可。
+
+表~\ref{tab:env} 列出了建议的编译配置。
+
+\begin{table}[htbp]
+  \centering
+  \caption{建议的编译环境配置}
+  \label{tab:env}
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    项目     & 配置值 \\
+    \midrule
+    发行版   & \TeX\ Live 2026 \\
+    编译引擎 & \enginename（推荐 Xe\LaTeX） \\
+    文件编码 & UTF-8（VSCode 右下角确认） \\
+    文档类   & \texttt{ctexart} / \texttt{ctexbook} \\
+    中文支持 & \texttt{ctex} 宏包 + \texttt{fontset=fandol} \\
+    参考文献 & \texttt{biblatex} 或 \texttt{thebibliography} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% ===============================================================
+\section{中文与英文混排测试}
+
+中文测试：知识投毒攻击通过向检索语料中注入对抗性文本，
+诱导大语言模型生成攻击者预设的答案。英文混排测试：
+\textit{Retrieval-Augmented Generation (RAG) improves factuality by grounding
+generation in external corpora}，但同时扩大了攻击面。
+
+中英文之间自动添加的间距应由 \texttt{ctex} 处理，无需手动输入空格。
+数字与单位示例：检索 Top-$k = 5$，投毒比例 $0.08\%$，ASR 从 $0.833$ 降到 $0.217$。
+
+% ===============================================================
+\section{数学公式测试}
+
+行内公式示例：检索增强生成的输出可写为
+$p_\theta(y \mid q, \mathcal{D}_k)$，其中 $\mathcal{D}_k = \{d_1, \dots, d_k\}$
+为检索到的 top-$k$ 文档集合。
+
+带编号的行间公式（攻击成功率定义）：
+\begin{equation}
+  \mathrm{ASR} = \frac{1}{|\mathcal{Q}|} \sum_{q \in \mathcal{Q}}
+  \mathbb{1}\!\left[\, \hat{y}_q \in \mathcal{A}_q \,\right],
+  \label{eq:asr}
+\end{equation}
+其中 $\hat{y}_q$ 为模型对查询 $q$ 的生成答案，$\mathcal{A}_q$ 为攻击者目标答案集合，
+$\mathbb{1}[\cdot]$ 为指示函数。式~(\ref{eq:asr}) 是全文评价的核心指标。
+
+多行对齐环境：
+\begin{align}
+  \mathrm{CCI}(c) &= \frac{1}{|c|}\sum_{d \in c} w_d \cdot \mathrm{JS}(d \parallel r),
+  \label{eq:cci1} \\[4pt]
+  \mathrm{score}(c) &= \alpha \cdot \mathrm{CCI}(c) - \beta \cdot \mathrm{Supp}(c),
+  \label{eq:cci2}
+\end{align}
+其中 $\mathrm{JS}(\cdot \parallel \cdot)$ 为 Jensen--Shannon 散度，
+$\mathrm{Supp}(c)$ 表示证据联盟 $c$ 的独立支撑度，
+$\alpha, \beta > 0$ 为权衡系数。
+
+矩阵与希腊字母：
+\[
+  \bm{W} =
+  \begin{pmatrix}
+    w_{11} & w_{12} & \cdots & w_{1n} \\
+    w_{21} & w_{22} & \cdots & w_{2n} \\
+    \vdots & \vdots & \ddots & \vdots \\
+    w_{m1} & w_{m2} & \cdots & w_{mn}
+  \end{pmatrix},
+  \qquad
+  \theta^{*} = \arg\max_{\theta}\ \mathcal{L}(\theta; \lambda, \gamma, \Omega).
+\]
+
+% ===============================================================
+\section{表格测试}
+
+表~\ref{tab:result} 是一个典型的实验结果表格样式（数字仅为占位示例，
+\textbf{不可用于论文正文}）。
+
+\begin{table}[htbp]
+  \centering
+  \caption{不同防御方法的攻击成功率与拒答率对比（示例数据）}
+  \label{tab:result}
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    方法 & ASR $\downarrow$ & 拒答率 $\downarrow$ \\
+    \midrule
+    无防御 (B0)        & 0.833 & 0.017 \\
+    相关性过滤 (B1)    & 0.833 & 0.017 \\
+    逐文档 LOO (B6)    & 0.650 & 0.067 \\
+    \textbf{本文方法}  & \textbf{0.217} & 0.400 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+跨列跨行示例见表~\ref{tab:merge}。
+
+\begin{table}[htbp]
+  \centering
+  \caption{跨行跨列示例}
+  \label{tab:merge}
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    \multirow{2}{*}{数据集} & \multicolumn{2}{c}{ASR} & \multirow{2}{*}{平均} \\
+    \cmidrule(lr){2-3}
+                       & Qwen2.5-7B & Llama-3.1-8B & \\
+    \midrule
+    NQ       & 0.833 & 0.650 & 0.742 \\
+    HotpotQA & 0.850 & 0.667 & 0.759 \\
+    MS~MARCO & 0.817 & 0.633 & 0.725 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% ===============================================================
+\section{插图测试}
+
+\subsection{TikZ 绘图（无需外部图片文件）}
+
+图~\ref{fig:curve} 用 \textsc{TikZ} 直接绘制，不依赖任何外部图片，
+因此一定能编译通过。
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[scale=0.95]
+    % 坐标轴
+    \draw[->, thick] (0,0) -- (6.6,0) node[right] {联盟规模 $|c|$};
+    \draw[->, thick] (0,0) -- (0,3.8) node[above] {影响力};
+    % 曲线
+    \draw[domain=0.2:6.2, samples=120, thick, blue!70!black]
+         plot (\x, {2.6 * exp(-(\x - 5.2)^2 / 3.2) + 0.35});
+    % 标记点
+    \foreach \x/\y in {1/0.6, 2/0.95, 3/1.55, 4/2.25, 5/2.85} {
+      \filldraw[red!80!black] (\x,\y) circle (2.2pt);
+    }
+    % 刻度
+    \foreach \x in {1,2,3,4,5} {
+      \draw (\x,0) -- (\x,-0.1) node[below] {\small \x};
+    }
+    \foreach \y in {1,2,3} {
+      \draw (0,\y) -- (-0.1,\y) node[left] {\small \y};
+    }
+    \node[above right, blue!70!black] at (3.4,2.9) {\small 影响力随联盟规模增长};
+  \end{tikzpicture}
+  \caption{TikZ 绘制的示例曲线}
+  \label{fig:curve}
+\end{figure}
+
+图~\ref{fig:flow} 是一个流程框图，验证 \texttt{positioning} 与箭头库是否正常。
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+      node distance=1.5cm,
+      box/.style={draw, rounded corners=3pt, fill=blue!8,
+                  minimum width=2.1cm, minimum height=0.85cm, font=\small},
+      arw/.style={-{Stealth[length=2.5mm]}, thick}
+    ]
+    \node[box] (q)  {查询 $q$};
+    \node[box, right=of q] (r) {检索 Top-$k$};
+    \node[box, right=of r] (g) {联盟构建};
+    \node[box, below=of g] (f) {反事实过滤};
+    \node[box, left=of f]  (o) {生成答案};
+    \draw[arw] (q) -- (r);
+    \draw[arw] (r) -- (g);
+    \draw[arw] (g) -- (f);
+    \draw[arw] (f) -- (o);
+    \draw[arw, dashed, red!70] (o.west) -- ++(-1.2,0) |- (q.west)
+          node[pos=0.25, above, font=\scriptsize, black] {反馈};
+  \end{tikzpicture}
+  \caption{TikZ 绘制的流程框图}
+  \label{fig:flow}
+\end{figure}
+
+\subsection{外部图片（可选验证）}
+
+如果你有图片文件，取消下面这段注释以验证 \texttt{graphicx} 是否正常
+（把文件名换成真实路径）：
+
+\begin{verbatim}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{figures/demo.png}
+  \caption{外部图片示例}
+  \label{fig:external}
+\end{figure}
+\end{verbatim}
+
+% ===============================================================
+\section{列表与交叉引用测试}
+
+无序列表：
+\begin{itemize}[noitemsep]
+  \item 中文条目一：知识投毒
+  \item 中文条目二：证据联盟
+  \item 英文条目：\texttt{coalition-level attribution}
+\end{itemize}
+
+有序列表：
+\begin{enumerate}[label=\arabic*), noitemsep]
+  \item 检索候选文档并执行关系抽取；
+  \item 构建证据联盟并计算控制力指标；
+  \item 对高控制力、低支撑度的联盟执行反事实过滤；
+  \item 用过滤后的证据集生成最终答案。
+\end{enumerate}
+
+交叉引用检查：\autoref{sec:env} 节、表~\ref{tab:result}、式~(\ref{eq:asr})、
+图~\ref{fig:curve} 与图~\ref{fig:flow}。如果这些都显示为正确编号（而非 \texttt{??}），
+说明需要编译两次的流程已正常完成。
+
+% ===============================================================
+\section{参考文献测试}
+
+本例使用 \texttt{thebibliography} 环境，不依赖 Bib\TeX，可单次编译出结果。
+引用示例：PoisonedRAG~\cite{zou2025poisonedrag} 揭示了 RAG 的投毒脆弱性；
+TrustRAG~\cite{xiang2024trustrag} 采用聚类过滤思路；
+反事实推断相关方法见~\cite{pearl2009causality}。
+
+\begin{thebibliography}{9}
+  \bibitem{zou2025poisonedrag}
+  W.~Zou, R.~Geng, B.~Wang, et al.
+  \newblock PoisonedRAG: Knowledge Corruption Attacks to Retrieval-Augmented
+           Generation of Large Language Models.
+  \newblock \emph{USENIX Security Symposium}, 2025.
+
+  \bibitem{xiang2024trustrag}
+  C.~Xiang, T.~Wu, et al.
+  \newblock Certifiably Robust RAG against Retrieval Corruption.
+  \newblock \emph{arXiv preprint}, 2024.
+
+  \bibitem{pearl2009causality}
+  J.~Pearl.
+  \newblock \emph{Causality: Models, Reasoning and Inference}.
+  \newblock Cambridge University Press, 2nd edition, 2009.
+\end{thebibliography}
+
+% ===============================================================
+\section*{编译状态总结}
+
+\begin{itemize}[noitemsep]
+  \item 若 PDF 正常生成、中文无乱码、公式与图表均显示正确，则环境配置成功。
+  \item 若出现 \texttt{??} 引用，再编译一次即可（交叉引用需要两轮）。
+  \item 若中文显示为空白或方框，检查是否使用了 Xe\LaTeX\ 引擎，
+        或把 \texttt{fontset=fandol} 改为 \texttt{fontset=windows}。
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,43 @@
+{
+  "family": "seen",
+  "tau_escape": 0.25,
+  "rounds": [
+    {
+      "round": 0,
+      "detector": "rule",
+      "pool": 76,
+      "pos_in_pool": 44,
+      "val_detect_auc": 0.8863,
+      "val_escape": {
+        "a": 0.0,
+        "b": 0.0,
+        "c": 0.0
+      }
+    },
+    {
+      "round": 1,
+      "detector": "mlp",
+      "pool": 88,
+      "pos_in_pool": 56,
+      "val_detect_auc": 0.8118,
+      "val_escape": {
+        "a": 0.03333333333333333,
+        "b": 0.0,
+        "c": 0.06666666666666667
+      }
+    },
+    {
+      "round": 2,
+      "detector": "mlp",
+      "pool": 88,
+      "pos_in_pool": 56,
+      "val_detect_auc": 0.8373,
+      "val_escape": {
+        "a": 0.0,
+        "b": 0.0,
+        "c": 0.0
+      }
+    }
+  ],
+  "final_detector": "RiskLearner r2"
+}

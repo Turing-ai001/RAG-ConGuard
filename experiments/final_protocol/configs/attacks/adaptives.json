@@ -1,0 +1,8 @@
+{
+  "id": "adaptive_templates",
+  "seen_family": {"A": "corroborating", "B": "de-coordinated", "C": "mixed"},
+  "unseen_family": {"D": "paraphrase_diversification", "E": "source_name_removal",
+                     "F": "evidence_fragmentation"},
+  "white_box_signal": "current detector risk of the variant group",
+  "retain": ["attacker-specified factual assertion"]
+}

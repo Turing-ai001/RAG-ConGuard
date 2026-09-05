@@ -1,0 +1,7 @@
+{
+  "name": "hotpotqa",
+  "corpus": "data/raw/hotpotqa_corpus.jsonl",
+  "queries": "data/raw/hotpotqa_queries.jsonl",
+  "poisoned": "data/poisoned/hotpotqa.json",
+  "kb": "hotpotqa_kb"
+}

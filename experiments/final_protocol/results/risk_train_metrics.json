@@ -1,0 +1,6 @@
+{
+  "train_pool": 377,
+  "train_auc": 0.8571637426900585,
+  "train_pos": 152,
+  "train_neg": 225
+}

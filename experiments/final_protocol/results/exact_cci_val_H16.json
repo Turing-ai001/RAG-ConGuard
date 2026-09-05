@@ -1,0 +1,43 @@
+{
+  "H": 16,
+  "n_coalitions": 33,
+  "nq|size3|poisonTrue": {
+    "n": 5,
+    "rho_control_vs_exact": 0.7,
+    "rho_impact_vs_exact": 0.7
+  },
+  "nq|size4|poisonTrue": {
+    "n": 3,
+    "rho_control_vs_exact": -1.0,
+    "rho_impact_vs_exact": -1.0
+  },
+  "nq|size2|poisonTrue": {
+    "n": 3,
+    "rho_control_vs_exact": 0.5,
+    "rho_impact_vs_exact": 0.5
+  },
+  "hotpotqa|size4|poisonTrue": {
+    "n": 3,
+    "rho_control_vs_exact": 0.5,
+    "rho_impact_vs_exact": 0.5
+  },
+  "hotpotqa|size3|poisonTrue": {
+    "n": 3,
+    "rho_control_vs_exact": 1.0,
+    "rho_impact_vs_exact": 1.0
+  },
+  "msmarco|size2|poisonTrue": {
+    "n": 4,
+    "rho_control_vs_exact": 0.2,
+    "rho_impact_vs_exact": 0.2
+  },
+  "msmarco|size2|poisonFalse": {
+    "n": 5,
+    "rho_control_vs_exact": 0.6,
+    "rho_impact_vs_exact": 0.6
+  },
+  "overall": {
+    "rho_control_vs_exact": 0.3941,
+    "rho_impact_vs_exact": 0.3941
+  }
+}

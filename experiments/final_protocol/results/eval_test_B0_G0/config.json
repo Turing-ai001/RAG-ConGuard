@@ -1,0 +1,14 @@
+{
+  "protocol": "final_protocol v1.0",
+  "split": "test",
+  "methods": [
+    "B0",
+    "G0"
+  ],
+  "datasets": [
+    "nq",
+    "hotpotqa",
+    "msmarco"
+  ],
+  "seed": 20260825
+}

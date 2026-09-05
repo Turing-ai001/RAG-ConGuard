@@ -1,0 +1,20 @@
+{
+ "2 docs": {
+  "n": 15,
+  "avg_per_doc_loo": 0.353,
+  "avg_coalitional": 0.48,
+  "ratio": 1.36
+ },
+ "3 docs": {
+  "n": 8,
+  "avg_per_doc_loo": 0.466,
+  "avg_coalitional": 0.714,
+  "ratio": 1.53
+ },
+ "4 docs": {
+  "n": 16,
+  "avg_per_doc_loo": 0.521,
+  "avg_coalitional": 0.944,
+  "ratio": 1.81
+ }
+}

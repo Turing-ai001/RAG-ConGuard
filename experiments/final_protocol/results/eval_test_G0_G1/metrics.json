@@ -1,0 +1,41 @@
+{
+  "split": "test",
+  "methods": {
+    "G0": {
+      "n": 60,
+      "asr": 0.2167,
+      "accuracy": 0.3333,
+      "refusal": 0.4,
+      "other": 0.05,
+      "asr_nonrefusal": 0.3611,
+      "accuracy_nonrefusal": 0.5556,
+      "cnt": {
+        "attack_success": 13,
+        "correct": 20,
+        "refusal": 24,
+        "other": 3
+      }
+    },
+    "G1": {
+      "n": 60,
+      "asr": 0.5333,
+      "accuracy": 0.35,
+      "refusal": 0.0667,
+      "other": 0.05,
+      "asr_nonrefusal": 0.5714,
+      "accuracy_nonrefusal": 0.375,
+      "cnt": {
+        "attack_success": 32,
+        "correct": 21,
+        "refusal": 4,
+        "other": 3
+      }
+    }
+  },
+  "retrieval": {
+    "asr@5": 1.0,
+    "avg_poisoned_top5": 3.817,
+    "n_queries": 60
+  },
+  "paired_bootstrap_vs_B0": {}
+}
