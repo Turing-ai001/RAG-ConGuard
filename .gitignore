@@ -17,6 +17,7 @@ build/
 
 # 工具状态（AI 工具的记忆目录等）
 .workbuddy/
+.claude/
 
 # 系统文件
 .DS_Store
@@ -32,3 +33,12 @@ data/raw/
 output/graphs/
 
 # 注意：output/eval_pipeline/ 下的实验结果 JSON（含消融结果）是论文数据，保留在版本库中
+
+# LaTeX 构建中间产物（可由源文件重新生成）
+*.aux
+*.out
+*.synctex.gz
+*.blg
+*.bbl
+*.toc
+comment.cut

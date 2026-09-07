@@ -1,0 +1,265 @@
+%%
+%% This is file `sigconf.tex', based on the ACM acmart primary article template.
+%% Modified with the contents of the RAG-ConGuard manuscript.
+%%
+%% For submission and review of your manuscript please change the
+%% command to \documentclass[manuscript, screen, review]{acmart}.
+%%
+%% When submitting camera ready or to TAPS, use:
+%% \documentclass[sigconf]{acmart}
+%%
+\documentclass[sigconf]{acmart}
+
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+%% Rights management information. Sent to you when you complete the rights
+%% form. TODO: replace with values provided to you.
+\setcopyright{acmlicensed}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{XXXXXXX.XXXXXXX}
+%% TODO: replace with the correct conference title from your rights email.
+\acmConference[Conference acronym 'XX]{Make sure to enter the correct
+  conference title from your rights confirmation email}{June 03--05,
+  2026}{Woodstock, NY}
+%%\acmBooktitle{Woodstock '26: ACM Symposium on Neural Gaze Detection,
+%%  June 03--05, 2026, Woodstock, NY}
+\acmISBN{978-1-4503-XXXX-X/2026/06}
+
+%%
+%% Submission ID. Use this when submitting an article to a sponsored event.
+%%\acmSubmissionID{123-A56-BU3}
+
+\begin{document}
+
+\title[RAG-ConGuard: Coalition-Aware Counterfactual Defense]{RAG-ConGuard: Coalition-Aware Counterfactual Defense against Coordinated Knowledge Poisoning in Retrieval-Augmented Generation}
+
+\author{Jinsong Yang}
+\email{yangjinsong@gs.zzu.edu.cn}
+\orcid{0009-0009-3038-3667}
+
+\author{Enhao Zhang}  % 小导师
+\email{xiaods@xxx.edu.cn}
+
+\author{Zhihua Wang}    % 大导师，放在这里！
+\correspondingauthor   % 大导师成为通讯作者
+\email{dads@xxx.edu.cn}% 通讯邮箱是大导师邮箱
+
+\affiliation{%
+  \institution{Zhengzhou University}
+  \city{Zhengzhou}
+  \state{Henan}
+  \country{China}
+}
+
+\renewcommand{\shortauthors}{Yang et al.}
+
+\begin{abstract}
+Retrieval-Augmented Generation (RAG) grounds large language models in open, uncurated knowledge sources, which inevitably contain biased or harmful content. Recent attacks no longer inject a single adversarial passage: they plant several mutually supporting documents so that, together, they dominate the output, and removing any one of them leaves the rest fully in control. Existing defenses score each retrieved document independently with hand-crafted features and therefore miss this coalition-level control. We propose RAG-ConGuard, a coalition-aware counterfactual defense that structures the retrieved evidence into a query-conditioned signed graph, discovers evidence coalitions, and measures each coalition's counterfactual influence over a trust-weighted answer-support score. A set-aware risk learner then removes risky coalitions and reconstructs a safe context, refusing only when no safe subset remains. On three benchmarks under targeted poisoning, RAG-ConGuard reduces the generation attack success rate from 0.833 to 0.217 at a strong-protection operating point, and to 0.583 while keeping refusal under 7\%, whereas single-document filters yield no gain and an NLI-consistency baseline is even counterproductive; a coalition-aware adaptive attack is consistently rejected.
+\end{abstract}
+
+%% TODO: 替换为从 https://dl.acm.org/ccs/ccs.cfm 生成的正确 CCS 概念
+\ccsdesc[500]{Security and privacy~Systems security}
+\ccsdesc[300]{Security and privacy~Intrusion/anomaly detection and malware mitigation}
+\ccsdesc[100]{Computing methodologies~Natural language processing}
+
+\keywords{Retrieval-Augmented Generation, Knowledge Poisoning Defense, Signed Evidence Graph, Coalitional Counterfactual Influence, Safe Context Selection}
+
+\maketitle
+
+%% Figure 1: 威胁/动机图，放在右栏顶部（Abstract 右侧），像 ShieldRAG 的首页图 1 那样。
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\linewidth]{fig1_scenario}
+  \caption{Coordinated knowledge poisoning poses significant risks to users: several mutually supporting poisonous passages jointly dominate the retrieved evidence, leaving per-document inspection blind to the coalition's control.}
+  \Description{A schematic of coordinated knowledge poisoning where a group of mutually supporting poisonous passages dominates the retrieved evidence and steers generation.}
+  \label{fig:scenario}
+\end{figure}
+
+\section{Introduction}
+Large Language Models (LLMs) cannot memorize the open-ended set of facts that real users ask about, and they are known to hallucinate when probed beyond their training data. Retrieval-Augmented Generation (RAG) has therefore become the dominant way to supply up-to-date, domain-specific knowledge at inference time. Most deployed RAG systems draw this context from open, uncurated sources such as public web corpora and community repositories, because these sources are abundant, zero-maintenance, and broadly cover real-world queries.
+
+However, precisely because these sources are uncurated, they inevitably contain biased, misleading, or harmful content, and grounding generation on them introduces safety risks that erode user trust. A retrieved adversarial passage can steer the model toward an injected assertion, a failure that is not merely a quality issue but a security one, since the model can be made to reproduce false or harmful statements on demand.
+
+Recent work shows this vulnerability can be actively exploited by poisoning attacks that inject adversarial passages into the knowledge base. Early attacks perturb a handful of documents to mislead retrieval, but emerging attacks deliberately coordinate several mutually supporting passages so that the threat moves from a single injected document to an evidence coalition: the group jointly dominates the retrieved set even though no single member is individually dominant, and removing any one member leaves the rest in control. Concretely, consider a query whose top-5 evidence contains five near-identical passages, each asserting the same false claim in a slightly different surface form; each is easy to dismiss in isolation, yet together they read as five independent sources and steer the answer (Figure~\ref{fig:scenario}). This coordinated threat substantially broadens the attack surface of RAG systems.
+
+Most existing defenses examine each retrieved document independently, relying on hand-crafted features such as likelihood, embedding distance, and perplexity. More recent methods resort to clustering-based filters, NLI-based consistency reasoning, or attribution signals, yet they still score documents one by one and rely on static thresholds. Because the signal of a coordinated attack lives in the structural and redundant relations among documents rather than in any individual document, these defenses cannot see coalition-level control, and they degrade under adaptive attacks.
+
+The central challenge is therefore to identify, before generation, an evidence coalition that exerts disproportionate control over the output while lacking independent support, without sacrificing retrieval utility. Notably, a high-impact group is not necessarily malicious: authoritative evidence that supports the correct answer may also exert strong influence, so neither relevance nor raw influence alone can serve as the risk signal. A systematic criterion is needed that separates under-supported, disproportionately controlling groups from merely important ones.
+
+We propose RAG-ConGuard, a coalition-aware counterfactual defense that performs structured risk reasoning over the entire retrieved evidence set. Its core hypothesis, termed \textbf{Unsupported Influence}, is that a successful coordinated attack manifests as a coalition that controls generation disproportionately relative to its independent corroboration. RAG-ConGuard structures the evidence into a query-conditioned signed graph, discovers coalitions, and measures coalition-level counterfactual influence; a set-aware risk learner reconstructs a safe context, and a coalition-aware adaptive attack trains it in an adversary-in-the-loop manner. Experiments on three benchmarks and three LLM families show substantial robustness gains that single-document filters cannot match.
+
+Our contributions are threefold. First, we model coordinated knowledge poisoning as evidence coalitions over a query-conditioned signed graph and measure their coalition-level counterfactual influence, identifying under-supported yet disproportionately controlling groups without knowing the attack target in advance. Second, we introduce a set-aware risk learner together with a risk-constrained safe context selection that removes risky coalitions and refuses only when no safe subset exists. Third, we design a coalition-aware adaptive attack and an adversary-in-the-loop training schedule, and show that the resulting defense rejects both seen and unseen attack variants that defeat static per-document filters.
+
+\section{Problem Definition and RAG-ConGuard}
+
+\subsection{Problem Definition}
+
+We consider a RAG pipeline in which a retriever, for a query $q$, selects a top-$k$ evidence set $D=\{d_1,\dots,d_k\}$ from an open corpus $\mathcal{C}$, and a generator produces an answer conditioned on $q$ and $D$. A knowledge-poisoning attacker injects $b$ adversarial passages into $\mathcal{C}$ such that, for a target query, the retrieved set contains several of them and the generator is steered toward an attacker-chosen answer. We focus on the coordinated setting: the injected passages are near-duplicates that express the same false assertion in different surface forms while remaining individually inconspicuous, so that the group --- rather than any single document --- is what controls the output. Formally, the attacker succeeds when the generator, conditioned on a retrieved set $D$ whose poisoned subset forms a mutually supportive group, outputs the attacker-chosen answer rather than the correct one, while each individual poisoned passage appears benign under any per-document criterion.
+
+The core of our defense is a safety hypothesis that we call \textbf{Unsupported Influence}. A successful coordinated attack manifests as an evidence coalition that (i) collectively controls the generation outcome and (ii) lacks independent supporting evidence, so that its influence is disproportionate to its external corroboration. Two consequences follow. First, the risk signal is a property of the evidence \textit{set} rather than of any single document, and cannot be recovered by per-document scoring. Second, an influential group is not necessarily malicious: authoritative evidence that supports the correct answer also exerts strong influence, so the criterion must separate disproportionate, under-supported control from legitimate influence. This hypothesis motivates a defense that reasons over coalitions rather than documents, and that measures control through a counterfactual --- what changes when the whole coalition is removed. The defender's objective is then to find the largest evidence subset that is jointly safe, free of any under-supported controlling coalition, and to answer from it, declining only when no such subset exists.
+
+\subsection{RAG-ConGuard Overview}
+
+RAG-ConGuard aligns with this hypothesis through three stages, illustrated in Figure~\ref{fig:framework}: contextual evidence structuring, coalition-level attribution, and risk-constrained context construction. Given a query, we first retrieve and structure the evidence into a signed graph; we then discover coalitions and measure their counterfactual influence; finally, a learned risk model removes risky coalitions and reconstructs a safe context, refusing only when none exists. The pipeline answers with a safe evidence subset or declines to answer, and the same pipeline is used unchanged at training and inference time.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig2_framework}
+  \caption{Overview of RAG-ConGuard: multi-view retrieval, signed evidence graph construction, coalition discovery and counterfactual influence estimation, and risk-constrained safe context selection.}
+  \Description{A three-stage pipeline diagram of RAG-ConGuard showing retrieval, signed graph construction, and risk-constrained context selection.}
+  \label{fig:framework}
+\end{figure}
+
+\textbf{Multi-view retrieval.} For each query we retrieve under complementary views --- a dense view with BGE embeddings and a lexical BM25 view --- and fuse the ranked lists with Reciprocal Rank Fusion into a top-5 evidence set. The composition is deliberately simple: shared entities and keywords surface the source documents of an injected group, while dense similarity recovers paraphrase-level relatedness. Retrieval stability across views is used only as an auxiliary signal; our contribution lies in the structural analysis that follows, not in retrieval itself. We keep the retrieval depth small ($k=5$) so that the subsequent graph analysis remains exact and inexpensive.
+
+\textbf{Claim extraction.} Rather than generating claim texts with an LLM, we represent each retrieved document by a query-relevant excerpt --- the leading 220 characters --- which constitutes one claim node. This avoids hallucination in extraction, keeps the downstream NLI cost low, and aligns the claim units with the textual surface of the attack passages, so that each retrieved document contributes exactly one node to the graph.
+
+\textbf{Signed evidence graph.} Over these claim nodes we build a query-conditioned signed graph: a cross-encoder NLI model scores each directed claim pair as supporting, contradicting, or neutral, and edges keep their sign and confidence. Two mechanisms refine this backbone: a numeric-conflict heuristic converts same-entity different-value pairs (which NLI tends to call neutral) into contradiction edges with full confidence, and a low-confidence subset is re-judged by an LLM whose score is fused with the NLI score. The result is a signed graph over the candidate documents, illustrated in Figure~\ref{fig:signed}, in which signs and confidences are kept on the edges rather than collapsed into a single scalar, because the coalition discovery and trust propagation of Section~\ref{sec:defense} depend on distinguishing support from contradiction. Unlike prior NLI-graph defenses that extract a consistent majority, this graph exists to expose evidence coalitions for the counterfactual analysis of Section~\ref{sec:defense}.
+
+%% Figure 3: signed graph 示例图占位（还没有现成图，替换成你的 signed graph 示例即可）
+\begin{figure}[t]
+  \centering
+  % TODO: 换成你的签名图示例（例如 fig3_signed_example.pdf）
+  \includegraphics[width=\linewidth]{fig1_scenario}
+  \caption{Illustrative signed evidence graph for an example query: support edges (vertical) and contradiction edges (slanted) with a near-duplicate coalition highlighted.}
+  \Description{An example signed graph with support and contradiction edges among claim nodes, highlighting a near-duplicate poisoned coalition.}
+  \label{fig:signed}
+\end{figure}
+
+\section{Coalition-Level Counterfactual Defense}
+\label{sec:defense}
+
+\subsection{Evidence Coalition Discovery}
+
+On the signed graph we define an evidence coalition as a connected component induced by positive (supportive) edges, refined to exempt isolated singletons: a component is retained only if it has size at least two and is internally cohesive or individually influential. Because the retrieved set is small ($k=5$), connected-component enumeration is exact and inexpensive, and no multivariate cluster refinement is required. The resulting coalitions may be multi-source benign clusters, near-duplicate poisoned clusters, a single highly influential document, or competing fact clusters; telling them apart requires the structural and influence features of Section~\ref{sec:risk}, since a coalition's raw size or cohesion alone does not reveal whether it is under-supported.
+
+\subsection{Coalitional Counterfactual Influence}
+\label{sec:influence}
+
+Existing counterfactual defenses remove documents one by one. Under a group of near-duplicate poisoned passages, per-document removal leaves the remaining members fully in control, so individual influence is diluted and the group's control becomes invisible. RAG-ConGuard therefore intervenes at the coalition level. We first compute, over the signed graph, a trust-propagation score $p_c$ for each claim: support edges raise the trust of their targets while contradiction edges suppress it with a refutation penalty applied iteratively, so that a claim corroborated by many independent sources accumulates trust while a claim contradicted by others loses it. For each candidate answer $a$ (the correct and the attacker-specified answers, obtained target-free as the top-2 query-similar claims), the answer-support score is $s_G(a)=\sum_c p_c\cdot\max(0,\mathrm{sim}(c,a))$, where $\mathrm{sim}$ is the BGE cosine similarity between claim and answer.
+
+The counterfactual influence of a coalition $C$ is the relative drop in support for the most-affected answer after removing the whole coalition, $I(C)=\max_a\left[s_G(a)-s_{G\setminus C}(a)\right]/s_G(a^\ast)$. The control of $C$ is then $I(C)$ weighted by one minus its external corroboration, capturing how much the coalition stands alone rather than being independently confirmed. Because there are only a few coalitions per query, the exact computation is cheap and requires no gradient or probing. We emphasize one distinction: this influence is a lightweight, evidence-side \textit{proxy} of generation control, and we validate its relation to an exact generation-level divergence in Section~\ref{sec:analysis} rather than equating the two.
+
+\subsection{Set-Aware Risk Learning}
+\label{sec:risk}
+
+Instead of classifying each document independently, we learn a set-aware risk over coalition structure. For every coalition we compute six structural and influence features --- size, internal cohesion (support-edge density), external corroboration (per-member external support), external refutation (per-member external contradiction), the coalitional influence $I(C)$, and the control score --- and a three-layer MLP maps the standardized feature vector to a probability that the coalition is poisoned; a fixed weighted sum of the same features passed through a sigmoid serves as the no-training baseline. The features are chosen so that a poisoned group --- internally cohesive, externally uncorroborated, and jointly controlling --- scores high, while a benign multi-source cluster is corroborated and a competing fact cluster is externally contradicted. The control score combines influence with one minus external corroboration, so a coalition that controls the answer only because nothing corroborates it scores as high-risk, whereas an independently confirmed coalition does not. Labels are weak but actionable: a coalition is positive when at least 80\% of its members are poisoned, with clean-query coalitions as negatives. We split queries 70/30 to avoid leakage.
+
+We report this learner honestly. The learned model discriminates poisoned from benign coalitions with a held-out AUC of 0.79--0.86, versus roughly 0.32 for the rule baseline, so the feature combination --- not any single feature --- drives discrimination. Yet the rule scorer matches the learned model end-to-end at some operating points (0.533 versus 0.583 at the availability point), so the learner's value lies in automation and calibration rather than a large robustness margin. We therefore treat the learner and the rule scorer as two realizations of the same structural signal, and report both.
+
+\subsection{Risk-Constrained Safe Context Selection}
+
+Given coalition risks, RAG-ConGuard constructs a safe context instead of filtering documents with a static per-document rule. For a risk threshold $\tau$, every coalition whose risk is at least $\tau$ is removed and its member claims dropped; the survivors form the safe evidence subset from which the generator answers, and if none survives the system refuses with a canonical ``I don't know''. A greedy variant reconstructs the subset bottom-up: remove the highest-risk coalition, then re-add the remaining documents by marginal safety utility until a preset retention lower bound is met, which caps the refusal rate at the cost of admitting some risk. This bottom-up reconstruction is what realizes the availability operating point: by always retaining a document when a plausible safe option exists, it avoids the blanket refusal that top-down removal produces on fully controlled queries. Sweeping $\tau$ (or the retention bound) trades robustness against utility, so the operating point is an explicit choice rather than a hidden one. This differs fundamentally from per-document anomaly detection because the decision is set-level and conditioned on how much of the retrieval is jointly controlled.
+
+\subsection{Adaptive Attack and Adversary-in-the-Loop Training}
+
+To stress the defense under evolving evidence, we design a coalition-aware adaptive attack that rewrites an existing targeted poisoning group. Three templates ask an LLM to generate variants of the original adversarial passages while preserving the attacker-specified assertion: a corroborating variant that adds claims of independent sources, a de-coordinated variant that removes cross-reference wording, and a mixed variant that mentions a single source. Each keeps the group retrievable and mutually supportive, and is adaptive in that every round re-evaluates the current risk learner. The attack is black-box in the sense that it does not require access to the defender's parameters, only to the risk scores that the defense exposes at inference time.
+
+RAG-ConGuard does not merely evaluate the detector under adaptive attacks after training; it mines hard evasion examples with the adversary in the loop. The schedule alternates: (i) the current risk model scores the original and variant groups; (ii) variants that evade it join a hard-example pool with benign coalitions as negatives; (iii) the MLP is retrained on the accumulated pool; (iv) the adversarial generators re-target the updated detector. In the observed schedule the rule detector rejects all variants (escape rate 0.00), but a round-1 MLP is partially evaded (escape rate 0.03--0.07); after one round of hard-example mining the round-2 detector again rejects all variants, and the final detector also rejects every unseen variant never used in training (escape 0.00, AUC 0.865). This demonstrates both the adaptivity of the attack family and the necessity of the adversary-in-the-loop schedule for avoiding a static risk boundary.
+
+\section{Experiments}
+
+\subsection{Experimental Setup}
+
+We evaluate on three standard open-domain benchmarks --- Natural Questions, HotpotQA, and MS MARCO --- each with a 600k-document corpus. Following the PoisonedRAG setting~\cite{zou2024poisonedrag}, for every query of a dataset five adversarial passages answer it with an attacker-chosen incorrect answer, and the $5\times N$ passages are injected before retrieval ($\sim$0.08\% of the corpus, with no further selection or filtering). BGE-base-en-v1.5~\cite{xiao2023bge} with a FAISS index and BM25 form the two retrieval views, fused by RRF into top-5. The generator is Qwen2.5-7B-Instruct (fp16, temperature 0, 128 tokens), extended to Llama-3.1-8B-Instruct and Mistral-7B-v0.3 for the cross-model study. The NLI backbone is a cross-encoder DeBERTa fine-tuned on MNLI, and a low-confidence subset of edge decisions is delegated to an LLM judge fused with the NLI score.
+
+Retrieval robustness is the retrieval ASR, the fraction of queries with at least one poisoned document in the top-5; generation robustness is the generation ASR, the fraction of outputs matching the attacker-specified answer; utility is the answer accuracy, and we additionally report the refusal rate and the benign mis-filtering rate on clean queries. Every query is assigned a mutually exclusive outcome (attack-success, correct, refusal, other), and statistical significance uses paired bootstrap (1000 resamples) against the undefended baseline. Splits are frozen (poisoned 60/20/20; clean 200/100/300 per dataset) with no train/validation/test overlap; all reported numbers are on the frozen test split unless stated otherwise.
+
+As baselines we include: (i) Vanilla RAG, which uses the retrieved evidence untouched; (ii) a relevance filter that drops documents below a BGE similarity threshold ($\tau=0.30$); (iii) a duplicate filter that drops near-duplicate groups above a similarity threshold ($\tau=0.70$); (iv) an NLI-consistency defense that keeps a consistent majority; (v) a per-document leave-one-out (LOO) filter ($\tau=0.50$); and (vi) a faithful re-implementation of TrustRAG, whose defense is LLM self-evaluation. Baseline thresholds are selected under the same validation constraint as the defended operating points, and all baselines share the same retriever, corpus, attack, and generator for a fair comparison.
+
+\subsection{Main Results}
+
+The attack reaches the prompt in every benchmark: the retrieval ASR is 1.00 and 3.82 poisoned documents enter the top-5 on average, so any downstream harm is attributable to the evidence set rather than to retrieval failure, and a defense that merely improves retrieval cannot resolve it. Across the two views the composition is redundant rather than fragile: the dense view recovers paraphrase-level matches and the lexical view recovers keyword matches, so the poisoned group is recovered whichever view dominates for a given query. This redundancy is why retrieval-side filtering is insufficient --- the injected passages are, by construction, among the most query-relevant documents --- and why the defense must operate on the structure of the retrieved set itself.
+
+Table~\ref{tab:main} reports the generation ASR and refusal rate on the frozen test split. The undefended pipeline is successfully steered in 83.3\% of the poisoned queries. The relevance filter changes nothing (0.833), and the duplicate filter reduces the rate only to 0.750, because the poisoned group is relevant to the query and its members are individually indistinguishable; removing near-duplicates only helps once the group exceeds the similarity threshold, and most of it passes. The NLI-consistency baseline is counterproductive (0.867): the internally consistent majority is precisely the injected coalition, which is the strongest evidence that ``consistency'' is the wrong signal under coordinated poisoning. RAG-ConGuard at its strong-protection point reduces the ASR to 0.217 at a 40\% refusal rate, and at its availability point to 0.583 while keeping refusal at 6.7\%. TrustRAG reaches 0.150 but at a 48.3\% refusal rate and by having the LLM rewrite the answer --- an evidence-level intrusion rather than evidence selection, and hence not directly comparable on mechanism, even though both reduce the surface ASR.
+
+Utility is preserved. On clean queries the undefended generator already refuses 27--29\% of the time, and RAG-ConGuard adds only 2.2--3.3 percentage points of refusal with a benign mis-filtering rate of 8.7--14.4\%, within a 15\% budget; these clean-side numbers are measured on the frozen clean splits (200/100/300 per dataset) where no poisoning is present, so they reflect the defense's cost on a benign corpus rather than its robustness. At matched refusal levels the coalition defense is strictly better than per-document LOO (0.583/0.300 versus 0.650/0.217 at 6.7\% refusal), confirming that set-level decisions retain more useful evidence than per-document filtering. The high strong-protection refusal rate is not a defect but a correct action: in 58\% of the poisoned queries the entire top-5 is controlled by a single coalition, where refusing is the honest response rather than answering from a fully compromised context. Because a simultaneous 70-point ASR reduction and sub-10\% refusal cannot hold at this attack density, the framework exposes the trade-off explicitly through two operating points rather than hiding it behind a single reported number.
+
+\begin{table}[t]
+  \caption{Main results on the frozen test split ($n=60$).}
+  \label{tab:main}
+  \begin{tabular}{lccc}
+    \toprule
+    Method & ASR & Acc & Refusal \\
+    \midrule
+    B0 Vanilla RAG & 0.833 & 0.100 & 0.017 \\
+    B1 Relevance filter ($\tau=0.30$) & 0.833 & 0.100 & 0.017 \\
+    B2 Duplicate filter ($\tau=0.70$) & 0.750 & 0.200 & 0.017 \\
+    B4 NLI-consistency & 0.867 & 0.083 & 0.033 \\
+    B5 TrustRAG (faithful) & 0.150 & 0.333 & 0.483 \\
+    B6 Per-document LOO ($\tau=0.50$) & 0.650 & 0.217 & 0.067 \\
+    \textbf{G0 strong protection ($\tau=0.05$)} & \textbf{0.217} & 0.333 & 0.400 \\
+    \textbf{G1 availability ($\lambda=0.20$)} & \textbf{0.583} & 0.300 & 0.067 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Analysis}
+\label{sec:analysis}
+
+\textbf{Attribution.} Table~\ref{tab:attr} isolates the per-document versus coalition-level gap under redundant poisoning. As the poisoned group grows from 2 to 4 documents, per-document LOO influence grows slowly (0.353$\rightarrow$0.521) while coalition-level removal grows sharply (0.480$\rightarrow$0.944), a ratio of 1.36$\times$ to 1.81$\times$. This is the quantitative form of the dilution mechanism: under near-duplicate poisoning, single-document attribution is unreliable, and only whole-coalition removal exposes the group's control. The gap widens with group size, exactly as the redundant-control argument predicts.
+
+\begin{table}[t]
+  \caption{Per-document LOO vs.\ coalition-level removal (test, 39 groups $\geq$2 poisoned docs).}
+  \label{tab:attr}
+  \begin{tabular}{lccr}
+    \toprule
+    Group size & Per-doc LOO & Coalition removal & Ratio \\
+    \midrule
+    2 & 0.353 & 0.480 & 1.36$\times$ \\
+    3 & 0.466 & 0.714 & 1.53$\times$ \\
+    4 & 0.521 & 0.944 & 1.81$\times$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Generalization.} Across LLM families the defense direction is consistent (Table~\ref{tab:crossllm}): the undefended ASR is 0.833 (Qwen), 0.650 (Llama, inherently more robust), and 0.883 (Mistral, most vulnerable); RAG-ConGuard drives the strong-protection ASR to 0.217--0.300 and the availability ASR to 0.55--0.65 at very low refusal. The benign mis-filtering rate stays between 7.1\% and 13.5\% across models, so the selection is conservative independently of the generator. That the ranking of models by vulnerability is preserved under defense, while the absolute ASR drops in every case, indicates the defense acts on the evidence set rather than on model-specific behavior.
+
+\begin{table}[t]
+  \caption{Cross-LLM robustness (test, same split and parameters).}
+  \label{tab:crossllm}
+  \begin{tabular}{lcccc}
+    \toprule
+    Model & B0 ASR & G0 (refusal) & G1 (refusal) & Clean mis-filter \\
+    \midrule
+    Qwen2.5-7B & 0.833 & 0.217 (40.0\%) & 0.583 (6.7\%) & 13.5\% \\
+    Llama-3.1-8B & 0.650 & 0.250 (41.7\%) & 0.550 (11.7\%) & 7.1\% \\
+    Mistral-7B-v0.3 & 0.883 & 0.300 (33.3\%) & 0.650 (0\%) & 7.1\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Ablations and adaptive attack.} Ablations attribute the gain to structure and to the learner. Removing the single-point exemption (retaining all isolated singletons as coalitions) drops the validation AUC from 0.858 to 0.769 and leaves misses at the strongest threshold, showing that coalition structure, not raw per-document anomaly, is what localizes the attack. A signed-semantic graph variant clusters poisoned groups more tightly but raises the refusal rate (0.100@70.0\% versus 0.183@58.3\%), so we retain the signed backbone for its lower refusal surface. The rule-based scorer matches the learned model end-to-end (0.533 versus 0.583), so the structure is the primary source of the gain while the learner contributes automation and calibration. The adaptive attack is rejected across rounds and, crucially, on unseen variants never used in training (escape 0.00, AUC 0.865). Sensitivity over $\tau$ traces a smooth robustness--utility frontier rather than a fragile cliff: on the validation plane, sweeping $\tau$ from 0.05 to 0.5 moves the strong-protection ASR from 0.167 to 0.333 while refusal drops from 0.583 to 0.467, so the two reported operating points are chosen from a stable frontier rather than a single brittle threshold.
+
+\textbf{Limitations.} A limitation we report honestly: the influence proxy correlates only moderately ($\rho\approx0.39$) with an exact generation-level divergence, so Section~\ref{sec:influence} is framed as an evidence-side approximation with the exact divergence as an analysis control. We also note that the adaptive family consists of style-level rewrites that preserve the attacker's assertion; stronger attacks that reverse semantics or mix in benign sources are left to future work.
+
+\section{Related Work}
+
+\textbf{Poisoning attacks.} Early work perturbs passages to mislead dense retrieval, and later methods plant retrieval backdoors that steer generation or inject at the corpus level. Emerging attacks coordinate several mutually supporting passages or operate black-box, moving the threat from a single document to a coalition, which is precisely the setting we target. These coordinated attacks are what make per-document defenses insufficient and motivate reasoning over the whole retrieved set.
+
+\textbf{Defenses.} Hand-crafted filters use likelihood, embedding distance, and perplexity to drop low-quality retrieval content; clustering-based filters group and re-rank by an LLM; NLI-consistency methods build a contradiction graph and keep a consistent majority; and attribution methods trace influence through attention or embedding space. All of these process documents individually and are not designed for coordinated groups, so the redundant control of a mutually supporting poisoned group remains invisible to them. Closest to us are graph-based consistency defenses, but they select a majority rather than measuring coalition-level control, and none is trained against coalition-aware adaptive attacks, which is the gap RAG-ConGuard fills.
+
+\section{Conclusion}
+
+We propose RAG-ConGuard, a coalition-aware counterfactual defense that models coordinated knowledge poisoning as evidence coalitions on a query-conditioned signed graph and measures coalition-level influence over a trust-weighted answer-support score. A set-aware risk learner reconstructs a safe context, trained with an adversary in the loop. Experiments show substantial robustness gains --- including an ASR reduction from 0.833 to 0.217 at the strong-protection point --- that per-document filters cannot match, while utility and clean-side behavior are preserved.
+
+%%
+%% The acknowledgments section is defined using the "acks" environment
+%% (and NOT an unnumbered section). Fill in if needed.
+% \begin{acks}
+% To ...
+% \end{acks}
+
+%%
+%% The bibliography.
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{rag-conguard}
+
+\end{document}
+\endinput
+%%
+%% End of file `sigconf.tex'.

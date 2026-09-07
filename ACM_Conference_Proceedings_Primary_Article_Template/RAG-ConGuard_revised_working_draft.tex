@@ -1,0 +1,438 @@
+%% RAG-ConGuard: evidence-aligned working revision, 2026-09-05.
+%% Source: user-uploaded 86f23eef-ab82-4fa1-a552-88b4dd4752a2.tex.
+%% Numerical basis: third-batch report and its acceptance-correction report.
+%% Reports are the source of the numbers; raw experiment files were not supplied.
+%% This is a working manuscript, not a submission-ready or independently verified report.
+%% REVISION_CHECK comments and visible verification notes identify unresolved items.
+%% Preserve these notes until the associated evidence is checked; hiding notes does
+%% not establish that a result or implementation detail has been verified.
+\documentclass[sigconf]{acmart}
+
+\AtBeginDocument{\providecommand\BibTeX{{Bib\TeX}}}
+
+%% Working-draft controls. Keep verification notes visible during revision.
+\newif\ifrevisionnotes
+\revisionnotestrue
+\newcommand{\verification}[1]{%
+  \ifrevisionnotes
+    \par\smallskip\noindent
+    {\small\color{red!65!black}\textbf{Verification pending.} #1}\par\smallskip
+  \fi}
+%% Use existing assets when provided; missing assets remain visible placeholders.
+\newcommand{\draftfigure}[2]{%
+  \IfFileExists{#1.pdf}{\includegraphics[width=\linewidth]{#1.pdf}}{%
+    \IfFileExists{#1.png}{\includegraphics[width=\linewidth]{#1.png}}{%
+      \IfFileExists{#1.jpg}{\includegraphics[width=\linewidth]{#1.jpg}}{%
+        \fbox{\parbox[c][26mm][c]{0.90\linewidth}{\centering\small
+          Figure asset pending.\par\medskip #2}}}}}}
+
+%% Retained ACM metadata placeholders: replace for the actual venue.
+\setcopyright{acmlicensed}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{XXXXXXX.XXXXXXX}
+\acmConference[Conference acronym 'XX]{Make sure to enter the correct
+  conference title from your rights confirmation email}{June 03--05,
+  2026}{Woodstock, NY}
+\acmISBN{978-1-4503-XXXX-X/2026/06}
+
+\begin{document}
+
+%% REVISION_CHECK TITLE: retained at the author's request while impact/probe
+%% analyses are being reconciled. A neutral alternative is:
+%% RAG-ConGuard: Coalition-Based Evidence Filtering against Coordinated
+%% Knowledge Poisoning in Retrieval-Augmented Generation.
+\title[RAG-ConGuard: Coalition-Aware Counterfactual Defense]{RAG-ConGuard: Coalition-Aware Counterfactual Defense against Coordinated Knowledge Poisoning in Retrieval-Augmented Generation}
+
+\author{Jinsong Yang}
+\email{yangjinsong@gs.zzu.edu.cn}
+\orcid{0009-0009-3038-3667}
+\affiliation{%
+  \institution{Zhengzhou University}
+  \city{Zhengzhou}
+  \state{Henan}
+  \country{China}}
+
+\author{Enhao Zhang}
+\email{xiaods@xxx.edu.cn} % TODO: confirm actual email.
+\affiliation{%
+  \institution{Zhengzhou University}
+  \city{Zhengzhou}
+  \state{Henan}
+  \country{China}}
+
+\author{Zhihua Wang}
+\authornote{Corresponding author.}
+\email{dads@xxx.edu.cn} % TODO: confirm actual corresponding-author email.
+\affiliation{%
+  \institution{Zhengzhou University}
+  \city{Zhengzhou}
+  \state{Henan}
+  \country{China}}
+
+\renewcommand{\shortauthors}{Yang et al.}
+
+\begin{abstract}
+Knowledge-base poisoning can place several related adversarial passages in the retrieved context of a retrieval-augmented generation (RAG) system. Their similarity and mutual support can make document-level relevance or consistency insufficient for selecting evidence. We present RAG-ConGuard, a coalition-based filter that groups retrieved passages by semantic similarity and scores each group using its size, internal support, external contradiction, and an evidence-side removal feature. A learned risk model supports threshold-based removal and a second selection policy with a minimum document-retention constraint. On a previously examined 60-query test split spanning three benchmarks, the availability configuration reduces attack success from 83.3\% to 48.3\%, increases answer accuracy from 10.0\% to 36.7\%, and yields a 10.0\% refusal rate. A stronger configuration reaches 18.3\% attack success with 45.0\% refusal. On 900 clean queries, the availability configuration removes 3.93\% of documents on a query-averaged basis and increases refusal from 28.56\% to 29.44\%. These results characterize a robustness--availability trade-off on the evaluated splits; independent confirmation, clean-answer accuracy, and the generation-level interpretation of the removal feature remain unresolved.
+\end{abstract}
+
+%% TODO: verify CCS concepts for the target venue.
+\ccsdesc[500]{Security and privacy~Systems security}
+\ccsdesc[300]{Security and privacy~Intrusion/anomaly detection and malware mitigation}
+\ccsdesc[100]{Computing methodologies~Natural language processing}
+\keywords{Retrieval-Augmented Generation, Knowledge Poisoning, Evidence Coalitions, Context Filtering, Counterfactual Features}
+
+\maketitle
+
+\verification{The original title is retained provisionally. Its emphasis on counterfactual defense should be reconsidered after the impact ablation and generation-probe analysis are reconciled. Red notes identify working-draft items, not established findings.}
+
+\begin{figure}[t]
+  \centering
+  \draftfigure{fig1_scenario}{Coordinated poisoning of retrieved evidence.}
+  \caption{Threat setting: several related poisoned passages enter the retrieved context and support an attacker-selected answer. Similarity among passages does not establish their factual reliability.}
+  \Description{A planned example of multiple related poisoned passages entering a RAG context.}
+  \label{fig:scenario}
+\end{figure}
+
+\section{Introduction}
+
+Retrieval-augmented generation (RAG) supplies a language model with external passages relevant to a query. This allows a system to use information beyond its parameters, but also exposes generation to the reliability of the retrieved corpus. When an attacker can insert documents into that corpus, a passage that is relevant to the query can carry an incorrect assertion intended to appear in the answer.
+
+PoisonedRAG demonstrates targeted corpus poisoning against RAG pipelines~\cite{zou2024poisonedrag}. We study a setting in which each target query is associated with several adversarial passages expressing the same intended answer. Such passages may occupy multiple positions in the retrieved set and repeat similar evidence. Removing one member need not remove the remaining support for that answer. This motivates examining related passages jointly, without assuming that every poisoned passage evades every document-level detector.
+
+Relevance, repetition, consistency, and evidence influence provide different information. A highly relevant passage can be false; mutually consistent passages can repeat a shared error; and an influential group can contain useful evidence. We therefore treat coalition structure and evidence-side removal effects as risk features to be evaluated empirically, rather than as sufficient conditions for maliciousness. Figure~\ref{fig:scenario} illustrates the setting.
+
+RAG-ConGuard operates between retrieval and final answer generation. It represents each retrieved passage by a short excerpt, builds support and contradiction relations, and groups semantically similar excerpts. A small classifier scores each eligible group using four features: group size, internal support density, external contradiction, and the change in a graph-based support score after group removal. The final context is selected either by removing groups above a threshold or by limiting deletion so that a minimum number of documents remains. The latter policy restricts evidence loss but cannot guarantee that the retained documents are benign or that the generator will answer.
+
+Our evaluation distinguishes validation-based model selection, a revised comparison on a previously examined test split, and clean-query evaluation. The selected configuration reduces attack success on the revised test split, while a stronger removal policy incurs more refusal. The evidence-side removal feature is retained as one component of the classifier; its contribution is assessed through ablation, and its relationship to generation is not assumed. The current main model does not use an independent-source corroboration feature and is not presented as the outcome of successful adversarial training.
+
+The paper makes two methodological contributions and provides an empirical assessment. First, it defines a coalition-based filtering pipeline that separates semantic grouping from support and contradiction analysis. Second, it combines a four-feature risk model with two explicit context-selection policies and validation constraints. The evaluation compares these policies with document-level and consistency-based baselines and reports the accompanying refusal and clean-document removal costs. Claims about causal generation control or detector-aware adaptive robustness require evidence beyond the results currently available.
+
+\section{Problem Definition and Framework}
+
+\subsection{Problem Definition}
+
+Let $\mathcal{C}$ denote a document corpus. For query $q$, retrieval produces an ordered list $D_q=(d_1,\ldots,d_k)$, and a generator $G$ produces an answer conditioned on $q$ and a selected context. The attacker can insert passages into $\mathcal{C}$ but does not modify the retriever or generator parameters. In the evaluated targeted setting, five passages are constructed for each attack query to promote a specified incorrect answer. Whether these passages are retrieved, retained, or successful is measured separately.
+
+The defender observes the query, retrieved documents, and retrieval-side information, and computes text embeddings and pairwise relations. It does not use the reference answer, attack target, or document-origin labels in its inference features or selection rule. Origin labels are used for training and retrospective evaluation; reference answers and attack targets are used for outcome scoring. The target-free candidate construction in Section~\ref{sec:influence} uses only the query and retrieved excerpts.
+
+The defender seeks to reduce attack success while limiting the removal of clean evidence and reporting the resulting refusal rate. These are empirical objectives. Passing a learned risk threshold does not certify a document as correct, and retaining a nonempty context does not imply that a safe answer exists.
+
+\subsection{Framework Overview}
+
+The pipeline has three stages: retrieve and represent evidence, form and score coalitions, and select the final context (Figure~\ref{fig:framework}). The selected main configuration, denoted C in the experimental records, uses semantic grouping and four risk features. A positive-edge grouping variant, denoted A, serves as a structural comparison. The six-feature external-support variant B remains exploratory.
+
+\begin{figure}[t]
+  \centering
+  \draftfigure{fig2_framework}{Retrieval; relation graph and semantic groups; four-feature risk scoring; S0 or S2 selection; generation.}
+  \caption{Revised RAG-ConGuard pipeline. The main model uses semantic grouping and four risk features. S0 applies threshold removal; S2 additionally enforces a document-retention lower bound.}
+  \Description{A planned framework diagram with retrieval, semantic grouping, four risk features, two selection policies, and generation.}
+  \label{fig:framework}
+\end{figure}
+
+\textbf{Retrieval.} A BGE embedding retriever~\cite{xiao2023bge} and BM25 provide dense and lexical rankings, which are combined by reciprocal rank fusion to obtain $k=5$ documents. The four-dimensional classifier does not contain a separate multi-view stability feature. Retrieval is held fixed when comparing selection methods under the same experimental configuration.
+
+\textbf{Excerpt representation.} Each document contributes one node, represented by its leading 220 characters. We use ``claim node'' as a short name for this excerpt representation; the procedure is not an LLM-based claim extractor or a query-conditioned search within a passage. An excerpt may omit a relevant statement, qualification, or attribution appearing later in the document.
+
+\textbf{Evidence relations.} A cross-encoder NLI model assigns support, contradiction, or neutral relations to ordered excerpt pairs. The reported revised configuration disables the LLM judge. Support and contradiction are retained separately for structural features and graph-based support computation. The query determines retrieval and candidate support objects; the pairwise NLI input is the excerpt pair. Semantic relation scores are not treated as evidence of source independence or factual correctness.
+
+\verification{Reconcile the graph's exact threshold, numeric-conflict heuristic flags, and directed-to-undirected aggregation with the frozen run manifest. ``Pure NLI'' establishes that the LLM judge is disabled; it does not by itself document every auxiliary graph option.}
+
+\begin{figure}[t]
+  \centering
+  \draftfigure{fig3_signed_example}{Distinct support/contradiction relations and semantic grouping edges.}
+  \caption{Planned evidence-graph example. Semantic grouping edges and signed evidence relations must be drawn separately; they have different roles in the main configuration.}
+  \Description{Placeholder for a graph showing semantic grouping separately from support and contradiction.}
+  \label{fig:signed}
+\end{figure}
+
+\section{Coalition-Based Evidence Filtering}
+\label{sec:defense}
+
+\subsection{Evidence Coalition Discovery}
+
+Let $c_i$ be the excerpt associated with $d_i$, and let $e_i$ be its BGE embedding. In configuration C, an undirected grouping edge connects two nodes when their cosine similarity is at least $\eta=0.85$ and the pair is not marked as directly contradictory. Connected components of this grouping graph produce candidate groups. Excluding a direct contradiction edge does not prevent two contradictory nodes from joining through an intermediate node; the method therefore does not guarantee internally contradiction-free components.
+
+For a candidate group $C$, define $m_C=|C|$. Using distinct unordered support pairs, the support density is
+\begin{equation}
+ h(C)=\frac{|E^+_{\mathrm{in}}(C)|}{\binom{m_C}{2}},
+ \qquad m_C\geq 2,
+ \label{eq:cohesion}
+\end{equation}
+where $E^+_{\mathrm{in}}(C)$ contains support pairs internal to $C$. External refutation is the number of distinct contradiction pairs crossing the group boundary per group member,
+\begin{equation}
+ r(C)=\frac{|E^-_{\mathrm{cross}}(C)|}{m_C}.
+ \label{eq:refutation}
+\end{equation}
+It is a structural count normalized by group size, not a probability.
+
+The eligibility rule retains a candidate as a scored coalition when
+\begin{equation}
+ m_C\geq 2\quad\text{and}\quad\bigl(h(C)>0\ \lor\ I(C)>0\bigr),
+ \label{eq:eligible}
+\end{equation}
+where $I(C)$ is defined below. Singletons are exempt from coalition-level deletion. This design leaves isolated poisoned documents outside the coalition filter and is a coverage limitation, not a guarantee that singletons are safe.
+
+Variant A instead constructs components from positive evidence edges. The main configuration separates these two roles: semantic similarity defines groups, while support and contradiction contribute features. Group formation uses neither the attack target nor origin labels.
+
+\verification{Confirm the pair-counting conventions in Eqs.~\ref{eq:cohesion}--\ref{eq:refutation} against the final feature extractor. The reports describe density and per-member external contradiction, but the underlying source files were not provided with this manuscript.}
+
+\subsection{Evidence-Side Counterfactual Feature}
+\label{sec:influence}
+
+The removal feature measures a change in evidence support, not a direct change in generated text. Let $\mathcal{G}_q$ be the signed evidence graph and $p_i(\mathcal{G}_q)$ its implementation-defined trust-propagation weight for node $i$. Support relations increase graph support and contradiction relations introduce a refutation penalty. These weights are internal graph scores, not calibrated probabilities that the claims are true.
+
+The candidate set $\mathcal{A}_q$ consists of the two excerpts most similar to the query under BGE. These are candidate support objects rather than extracted answer strings. They need not contain the correct answer or the attack target. For a fixed candidate $a\in\mathcal{A}_q$, define
+\begin{equation}
+ s_{\mathcal{G}_q}(a)=\sum_{i\in V(\mathcal{G}_q)}
+ p_i(\mathcal{G}_q)\max\{0,\cos(e_i,e_a)\}.
+ \label{eq:support}
+\end{equation}
+Candidate objects are constructed from the full retrieved set and remain fixed for a within-query comparison. Graph weights are recomputed on the graph remaining after coalition removal. With
+$a^\star\in\arg\max_{a\in\mathcal{A}_q}s_{\mathcal{G}_q}(a)$,
+the relative support-drop feature is written as
+\begin{equation}
+ I(C)=
+ \frac{\displaystyle\max_{a\in\mathcal{A}_q}
+ \left[s_{\mathcal{G}_q}(a)-s_{\mathcal{G}_q\setminus C}(a)\right]}
+ {s_{\mathcal{G}_q}(a^\star)}
+ \label{eq:impact}
+\end{equation}
+when the denominator is positive. The zero-support case is assigned zero. If removal empties the graph, the remaining evidence support is zero; consequently, removing all evidence gives $I(C)=1$ when the original maximum support is positive. The revised implementation explicitly handles this case instead of skipping it.
+
+\verification{The support-drop formulation is retained from the supplied manuscript and aligned with the verified empty-graph correction. Confirm the exact trust update, initialization, normalization, iteration count, numerical tolerance, clipping, and candidate-freezing behavior against the frozen implementation before submission. Do not infer these details from the reported aggregate scores.}
+
+The main four-feature model does not multiply $I(C)$ by an external-corroboration term. An earlier positive-component implementation made cross-component positive support identically zero, rendering its proposed control feature a duplicate of $I(C)$. Variant B separates grouping from support to avoid this identity, but its additional external-support and control features are not used by the selected main model. Their empirical contribution is discussed in Section~\ref{sec:analysis}.
+
+\subsection{Coalition Risk Learning}
+\label{sec:risk}
+
+For each eligible coalition, the main model uses
+\begin{equation}
+ x_C=[m_C,\ h(C),\ r(C),\ I(C)]^\top.
+ \label{eq:features}
+\end{equation}
+A StandardScaler fitted on the training pool standardizes the four features. An MLP with hidden widths $(16,8)$ produces a scalar risk score $u_C=f_\theta(\widetilde{x}_C)$. We use this output for ranking and threshold selection without assuming calibrated probabilities.
+
+The training pool combines eligible coalitions from poisoned training queries and clean training queries. Let $z_i=1$ identify an injected document for training-label construction only. A coalition receives the training label
+\begin{equation}
+ \ell_C=\mathbf{1}\!\left[\frac{1}{m_C}\sum_{i\in C}z_i\geq 0.8\right].
+ \label{eq:label}
+\end{equation}
+All other training coalitions receive label zero. A zero training label therefore need not denote a wholly benign coalition. For descriptive statistics, ``pure benign'' means no injected members, ``pure poisoned'' means all members are injected, and intermediate compositions are mixed. Query identifiers are split before forming the training and validation pools. Validation and test labels are not inputs to the feature extractor or selector.
+
+The same feature definitions and eligibility rule apply to both positive and negative samples. The revised training pipeline excludes ineligible singletons and does not assign artificial zero influence to clean coalitions. Training fails explicitly if only one label class remains.
+
+\verification{Record the optimizer, activation, regularization, stopping tolerance, and any weighting or resampling from the saved MLP metadata. The available reports establish hidden widths, standardization, the label rule, and a 500-iteration cap, but not all optimizer settings.}
+
+\subsection{Context Selection}
+\label{sec:selection}
+
+Risk scores are computed once on the retrieved set. Both selectors preserve the original relative order of retained documents.
+
+\textbf{S0: threshold removal.} For threshold $\tau$, remove every eligible coalition with $u_C\geq\tau$ and retain the other documents. If no document remains, the selector returns a canonical refusal. Otherwise, the generator receives the retained context and can independently answer or refuse.
+
+\textbf{S2: removal with a retention floor.} For $n=|D_q|$ and retention parameter $\lambda$, set
+\begin{equation}
+ L=\max\{1,\lfloor\lambda n\rfloor\}.
+ \label{eq:floor}
+\end{equation}
+Visit eligible coalitions in decreasing risk order. Stop when the next score is below $\tau$. For a coalition above threshold, delete it only if at least $L$ documents would remain; otherwise stop and retain that coalition and all documents not yet removed. Scores are not recomputed, and removed documents are not reintroduced. This is a top-down deletion rule with early stopping, not bottom-up context reconstruction.
+
+The floor prevents an empty selected context when the initial retrieved set is nonempty, but does not bound answer-level refusal or certify the retained evidence. If a single high-risk coalition occupies all retrieved positions, deleting it violates the floor and S2 retains it. S0 can instead remove it and refuse. These policies expose different empirical costs rather than providing a proof that robustness and availability cannot be achieved together.
+
+\subsection{Validation-Based Operating Points}
+\label{sec:calibration}
+
+The availability point G1 is selected among evaluated configurations satisfying validation answer-level refusal of at most 10\% and clean-validation document mis-filtering of at most 5\%. The strong-protection point G0 uses the same clean mis-filtering budget but no 10\% refusal constraint. Within a feasible candidate set, selection minimizes validation ASR, breaking ties by refusal, mis-filtering, and a fixed parameter order. If no candidate is feasible, no qualifying operating point is declared. A no-filter reference distinguishes satisfying a budget from reducing attacks.
+
+The selected main configurations are C with S2, $\lambda=0.2$, $\tau=0.25$ for G1, and C with S0, $\tau=0.5$ for G0. Both thresholds and the choice of C were determined on validation data. Test performance does not certify that the validation constraints will transfer to another dataset or generator.
+
+\section{Experiments}
+
+\subsection{Experimental Setup}
+
+\textbf{Data and attack construction.} We use Natural Questions, HotpotQA, and MS MARCO, each with a 600k-document corpus. The evaluated attack follows a PoisonedRAG-style targeted construction~\cite{zou2024poisonedrag}: 100 attack queries per dataset, with five passages per query inserted before retrieval. Thus, the main snapshot adds 500 passages to each dataset corpus, approximately 0.083\% of the base corpus. This is one synthetic attack construction and does not establish robustness to other poisoning families.
+
+\textbf{Splits and evaluation history.} Within each dataset, the 100 attack queries are divided into 60 training, 20 validation, and 20 test queries. Clean queries are divided into 200 training, 100 validation, and 300 test queries per dataset. This gives 60 pooled poisoned validation queries, 60 pooled poisoned test queries, 300 clean-validation queries, and 900 clean-test queries. The split identifier lists are disjoint, and only training data are used to fit the scaler and classifier. However, the poisoned test set had already been examined during implementation diagnosis. We therefore call the final comparison a \emph{revised test comparison}, not an independent confirmation experiment. No separate untouched poisoned confirmation set is reported.
+
+\textbf{Models.} Retrieval uses BGE-base-en-v1.5 embeddings with FAISS and a BM25 view. The graph uses \texttt{cross-encoder/nli-deberta-v3-base}, with the LLM judge disabled in the revised experiments. The main generator is Qwen2.5-7B-Instruct with temperature zero and a 128-token generation limit. Llama-3.1-8B-Instruct and Mistral-7B-Instruct-v0.3 are evaluated by transferring the selected Qwen-side risk model and selection parameters without model-specific recalibration. The principal MLP seed is 20260825; seeds 42 and 7 provide developmental training comparisons.
+
+\textbf{Outcome metrics.} Generation ASR is the fraction of evaluated queries assigned an attack-success outcome under the target-answer matching procedure. Answer accuracy uses the reference answer on the poisoned-query evaluation set. Every output receives one mutually exclusive state: attack success, correct answer, refusal, or other. Refusal is assessed from the final response for every method; selector refusal is recorded separately. All queries remain in the denominator, including refusals and failed attacks.
+
+For a clean query with original context $D_q$ and retained context $D'_q$, let $M_q=|D_q\setminus D'_q|/|D_q|$. The clean document mis-filtering rate is
+\begin{equation}
+ \mathrm{MF}=\frac{1}{N_{\mathrm{clean}}}\sum_q M_q.
+ \label{eq:misfilter}
+\end{equation}
+This is a query average of document-removal fractions, not the fraction of queries changed. Clean-answer accuracy is not measured because verified answer labels are absent from the current clean evaluation files. Neither low refusal nor low document removal establishes preservation of clean-answer correctness.
+
+\verification{Document the exact answer normalization, alias matching, refusal markers, and state-precedence rule from the evaluator. References and attack targets used for outcome scoring must remain separate from inference inputs.}
+
+\textbf{Baselines.} The revised comparison includes Vanilla RAG (B0), relevance filtering (B1, $\tau=0.30$), duplicate filtering (B2, $\tau=0.95$), NLI consistency selection (B4), the project's TrustRAG implementation (B5), and per-document leave-one-out filtering (B6, $\tau=0.50$). A-G0 and A-G1 retain the positive-edge grouping alternative. B4 uses the stated revised NLI graph configuration; B6 uses the repaired impact implementation. Mechanism differences do not remove B5 from the comparison. Its reproduction fidelity and exact answering procedure require documentation rather than an unsupported ``faithful'' label.
+
+\verification{Supply the missing bibliography and baseline implementation references. Attach the validation search records for each tunable baseline; a listed threshold alone does not establish equal tuning budgets or faithful reproduction.}
+
+\textbf{Statistics.} We report query-level paired bootstrap intervals with 1,000 resamples for specified ASR differences. Validation intervals describe development-set differences after model selection. Intervals on the revised test split remain conditional on its prior use and are not a substitute for independent confirmation. No statistical claim is inferred from a difference in aggregate scores alone.
+
+\subsection{Validation and Revised Test Results}
+
+On the 60-query validation set, B0 has ASR 0.850. The selected G1 reaches ASR 0.667 with refusal 0.067 and clean-validation mis-filtering 0.044. G0 reaches ASR 0.233 with refusal 0.533 and clean-validation mis-filtering 0.049. These observations support selecting the reported operating points within the evaluated grid; they are not independent test results.
+
+Table~\ref{tab:main} reports the revised poisoned-test comparison. G1 reduces ASR from 0.833 to 0.483, increases accuracy from 0.100 to 0.367, and increases refusal from 0.017 to 0.100. Thus, the observed reduction in attack success is accompanied by both more correct answers and more refusals. G0 further reduces ASR to 0.183 at a refusal rate of 0.450. Its lower ASR must be interpreted together with that availability cost.
+
+\begin{table}[t]
+  \caption{Revised poisoned-test comparison: 60 previously examined queries, 20 per dataset. All entries are fractions. G0/G1 were selected on validation data.}
+  \label{tab:main}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lrrr}
+    \toprule
+    Method & ASR & Acc & Refusal \\
+    \midrule
+    B0 Vanilla & 0.833 & 0.100 & 0.017 \\
+    B1 Relevance & 0.833 & 0.100 & 0.017 \\
+    B2 Duplicate & 0.817 & 0.150 & 0.017 \\
+    B4 NLI consistency & 0.867 & 0.083 & 0.033 \\
+    B5 TrustRAG impl. & 0.150 & 0.333 & 0.483 \\
+    B6 Per-document LOO & 0.650 & 0.217 & 0.067 \\
+    A-G1 & 0.750 & 0.200 & 0.017 \\
+    A-G0 & 0.433 & 0.167 & 0.317 \\
+    \midrule
+    C-G1 (main) & 0.483 & 0.367 & 0.100 \\
+    C-G0 (main) & 0.183 & 0.317 & 0.450 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The query-level ASR difference for G1 relative to B0 is $-0.350$, with reported paired interval $[-0.500,-0.200]$. Relative to B6, the difference is $-0.167$, with interval $[-0.283,-0.050]$. B6 has lower refusal, 0.067 versus 0.100, so this comparison is not at matched refusal. B5 has lower ASR than G1 but substantially higher refusal. B1 has no ASR improvement in this comparison, B2 differs from B0 by one query, and B4 is numerically worse than B0. These observations concern the evaluated implementations and do not demonstrate that entire classes of relevance, consistency, or retrieval defenses are ineffective.
+
+\subsection{Clean-Query Costs}
+
+Table~\ref{tab:clean} uses the corrected, common answer-level refusal evaluator on 900 clean-test queries. B0 refuses 257 queries. G1 retains these refusals and adds eight; G0 adds seventeen. Relative to B0, refusal increases by $8/900$, approximately 0.89 percentage points for G1, and $17/900$, approximately 1.89 points for G0.
+
+\begin{table}[t]
+  \caption{Corrected clean-test results: 900 unique queries in total, 300 per dataset. MF is the query-averaged document-removal fraction. Clean-answer accuracy was not measured.}
+  \label{tab:clean}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lrrr}
+    \toprule
+    Method & Refusals & Refusal rate & MF \\
+    \midrule
+    B0 & 257 & 0.2856 & 0.0000 \\
+    C-G1 & 265 & 0.2944 & 0.0393 \\
+    C-G0 & 274 & 0.3044 & 0.0344 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+G1 changes the retained document set for 52 of the 900 queries. Of these, 43 remain non-refusals, eight change from non-refusal to refusal, and one remains a refusal. No B0 refusal becomes a non-refusal under G1 in this run. These measurements quantify a clean-side cost; they do not determine whether the non-refusal answers remain correct. The earlier zero-refusal claim for G1 resulted from counting only selector refusals and is excluded from the revised results.
+
+\subsection{Cross-Generator Transfer}
+
+Table~\ref{tab:crossllm} reports direct transfer on the 60-query validation set. All three generators show lower ASR with the frozen G1 configuration. Llama's refusal rate rises from 0.100 to 0.133, exceeding the 10\% validation target used for Qwen. No model-specific thresholds were selected for this transfer experiment. The results show a direction of change on these queries, not universal satisfaction of the availability constraint.
+
+\begin{table}[t]
+  \caption{Direct transfer of the frozen Qwen-side risk model and G1 parameters on 60 validation queries. These results are distinct from the revised test comparison.}
+  \label{tab:crossllm}
+  \centering
+  \small
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabular}{lrrrr}
+    \toprule
+    & \multicolumn{2}{c}{ASR} & \multicolumn{2}{c}{Refusal} \\
+    Model & B0 & G1 & B0 & G1 \\
+    \midrule
+    Qwen2.5-7B & 0.850 & 0.667 & 0.000 & 0.067 \\
+    Llama-3.1-8B & 0.700 & 0.567 & 0.100 & 0.133 \\
+    Mistral-7B & 0.883 & 0.683 & 0.000 & 0.000 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Feature and Grouping Analysis}
+\label{sec:analysis}
+
+Configuration C improves the revised-test scores over A at the reported operating points (Table~\ref{tab:main}). Because both grouping and its resulting features change between A and C, this comparison evaluates the full grouping choice rather than a single scalar feature. A more focused external-support comparison uses B and C, whose coalition lists are aligned and whose classifiers differ in their inclusion of external support and its derived control term.
+
+Across developmental seeds 20260825, 42, and 7, C has validation ROC-AUC values 0.836, 0.815, and 0.823; B has 0.847, 0.855, and 0.828. All three B fits reach the 500-iteration limit without convergence. The finite generation comparisons do not establish a consistent query-level advantage for B. These observations motivate retaining C as the main configuration; they do not prove that external support is intrinsically useless. The labels in these risk evaluations refer to coalitions and must not be confused with the query count of an end-to-end experiment.
+
+\textbf{Removal feature.} The latest report gives the provisional ablation values in Table~\ref{tab:impact}. On validation G1, removing impact leaves aggregate ASR at 0.667. On the revised test set, the reported ASR increases by two queries for G1 and six queries for G0. Equal aggregate ASR does not imply identical retained sets or per-query outcomes.
+
+\begin{table}[t]
+  \caption{Provisional impact ablation on the revised 60-query test set. C3 removes impact from the classifier and is reported at the same selection parameters. Per-query reconciliation and the calibration status remain pending.}
+  \label{tab:impact}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lrrr}
+    \toprule
+    Method & ASR & Acc & Refusal \\
+    \midrule
+    C-G1 & 0.483 & 0.367 & 0.100 \\
+    C3-G1 & 0.517 & 0.333 & 0.100 \\
+    C-G0 & 0.183 & 0.317 & 0.450 \\
+    C3-G0 & 0.283 & 0.217 & 0.450 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\verification{Rebuild separate G0 and G1 state-transition tables from the raw outputs. The report states that six queries change retained sets in each condition, while G0 ASR differs by six queries; the transition counts must reconcile with this boundary. Confirm retraining and distinguish fixed-parameter ablation from independently validation-calibrated ablation. Do not reuse the old 1.36/1.53/1.81 attribution ratios without verifying compatibility with the repaired impact and current coalitions.}
+
+\subsection{Generation-Probe Analysis}
+
+To compare the evidence-side feature with a generator-side measurement, hold a full-context-generated answer prefix fixed and evaluate next-token distributions under the full and coalition-removed contexts. At each of $H=16$ positions, compute Jensen--Shannon divergence between these distributions and average across positions. This measures a finite-prefix distributional response, not all possible generated answers or the correctness of the response.
+
+When removing a coalition empties the retrieved context, the comparison remains definable: evaluate the underlying generator with the same query and template but without retrieved evidence. The selector's deployment-time refusal rule is separate from this analysis call.
+
+The current partial measurement contains 35 coalitions whose deletion leaves a nonempty context, with Pearson $r=0.2462$ and Spearman $\rho=0.1997$. These are weak exploratory correlations on a restricted subset. The earlier value $r=0.5499$ used only 15 reusable probes and is not comparable to a different sample's Spearman coefficient.
+
+\verification{The latest report excludes 28 all-evidence coalitions because their remaining context is empty. This is not a mathematical reason to exclude them. Complete query-only generator probes for these coalitions, verify the fixed analysis list and reuse conditions, and report full-set and remaining-context-stratified correlations. The current 35-coalition subset must not be presented as the complete validation of the proxy.}
+
+\subsection{Rewritten Attacks and Training Scope}
+
+The project implements target-preserving rewriting templates and a detector-level training-loop check. In the repaired short run, three training queries produce fifteen variant passages without a qualifying evasion example; the training pool remains unchanged. This verifies part of the execution path but supplies no measured benefit from hard-example augmentation. It also does not establish that the selected C checkpoint was improved by adversarial training.
+
+The subsequent end-to-end run uses rewriting without detector feedback. It is therefore a rewritten-attack evaluation, not evidence of detector-aware adaptive optimization. Its reported snapshot combines original poisoned passages with additional variants. Under that mixed snapshot, the HotpotQA G1 run has ASR 1.000, equal to its B0 result; G0 has ASR 0.100 with refusal 0.900. This is a recorded failure of the availability policy in that run. S2's retention floor can leave poisoned evidence when the retrieved set is fully compromised, but the current experiment does not isolate corpus density from attack composition.
+
+\verification{Do not use the mixed-snapshot run as the final per-family attack table. Verify whether a/b/c shared one index, whether repeated queries therefore used identical contexts, and whether the 450 variants were counted per dataset or across all datasets. Replace each evaluated query's original five attack passages with five passages from one family at a time, keeping the budget fixed. Reconcile escape inequalities with raw risk scores, thresholds, retained poison, and answer outcomes. Do not call this detector-aware adaptive robustness unless feedback-based optimization is actually evaluated.}
+
+\subsection{Efficiency and Reproducibility}
+
+The method adds excerpt embedding, pairwise relation inference, graph support computation, risk scoring, and selection before final generation. At $k=5$, there are at most twenty ordered excerpt pairs, but model inference can still dominate the graph operations. End-to-end defense overhead must therefore be measured separately from answer generation and cache reuse.
+
+Each result should be tied to the code and execution-script revisions, risk-model and scaler hash, feature schema, graph settings, split lists, selected parameters, and generator configuration. Identical-input caching must preserve full prompt and model identity. Aggregate timing from a cached or batched run is not a per-request deployment latency estimate.
+
+\verification{The reported 0.67 seconds per generation is a batch-derived hot-run average, not measured end-to-end defense overhead. Confirm included operations, cache accounting, output-token counts, and component timings before adding an efficiency claim. Reconcile production revision 6685de0 with the later execution/report commit 3832f57 using the actual script hashes.}
+
+\section{Related Work}
+
+\textbf{Knowledge poisoning.} Targeted corpus injection can exploit the path from retrieval to answer generation, as studied by PoisonedRAG~\cite{zou2024poisonedrag}. The present evaluation concentrates on repeated, related attack passages. It does not cover the full range of retrieval backdoors, compositional cross-document attacks, or detector-aware optimization. Conclusions are restricted to the tested construction and configurations.
+
+\textbf{Evidence filtering and consistency.} The evaluated baselines use relevance, duplication, NLI consistency, per-document removal, or a separate answer-processing procedure. RAG-ConGuard instead scores eligible groups and couples those scores to a specified context-selection policy. The comparison does not assume that all existing defenses classify documents independently: clustering, graph reasoning, and attribution can already involve multiple documents. Novelty claims must identify the particular grouping, feature, and selection combination being evaluated.
+
+\textbf{Counterfactual measurements.} Removing a document or group provides a way to inspect dependence on supplied evidence. An evidence-graph score and a generator-distribution divergence answer different questions, however. Our main risk model includes a graph-support removal feature, while generation probes are an analysis control. Neither a larger change after deleting more text nor a correlation on a selected probe subset is sufficient to establish malicious causal control.
+
+\verification{The supplied TeX references \texttt{rag-conguard.bib}, but the bibliography file and the baseline papers were not attached. Existing citation keys are retained without inventing entries. Complete and verify the poisoning, graph-defense, attribution, and TrustRAG references before making priority or reproduction-fidelity claims.}
+
+\section{Limitations}
+
+The main poisoned-test comparison contains sixty queries already examined during development. No independent confirmation set is available in the reported experiments, and the small sample limits subgroup analysis. Clean evaluation measures refusal and document removal but lacks verified clean-answer labels, so it cannot establish accuracy preservation.
+
+The representation truncates each passage to 220 characters. Pairwise NLI can mistake shared topic or entity information for support, and semantic grouping can connect contradictory nodes transitively. Source independence is not identified. The singleton exemption also leaves isolated poisoned passages outside the coalition filter.
+
+The evidence-side impact feature has a limited and not yet fully reconciled marginal contribution. Its probe comparison is incomplete for all-evidence coalitions. External support is exploratory, and the present main model should not be interpreted as a validated implementation of the earlier ``Unsupported Influence'' hypothesis.
+
+S2's retention floor may preserve a high-risk group, while S0 may refuse after deleting all evidence. Neither policy provides a certified safe subset. Evaluations cover one primary synthetic attack construction, $k=5$, and three 7--8B-scale generators. Rewritten-attack stress results require a controlled per-family protocol, and detector-aware adaptive robustness and benefits from adversarial retraining remain unestablished. Full defense latency has not yet been measured.
+
+\section{Conclusion}
+
+RAG-ConGuard selects retrieved evidence using semantic groups, support and contradiction structure, and an evidence-side removal feature. The revised test comparison shows lower attack success and higher answer accuracy with the availability configuration, accompanied by more refusal. On clean queries, the corrected measurements show 3.93\% document mis-filtering and an approximately 0.89-percentage-point increase in refusal. These observations support further evaluation of coalition-based selection. They do not establish independent-source verification, causal generation control, or robust performance against detector-aware adaptive attacks. Final claims about impact and rewritten attacks depend on completing the analyses explicitly marked in this working draft.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{rag-conguard}
+
+\end{document}
