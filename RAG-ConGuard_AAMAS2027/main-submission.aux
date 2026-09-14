@@ -1,0 +1,84 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand*\HyPL@Entry[1]{}
+\citation{rag}
+\citation{poisonedrag}
+\HyPL@Entry{0<</S/D>>}
+\@writefile{toc}{\contentsline {section}{Abstract}{1}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\citation{poisonedrag}
+\citation{saferag}
+\citation{trustrag}
+\citation{shieldrag}
+\citation{bge}
+\citation{beir}
+\citation{nlimodel}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Corpus poisoning and service availability.}{2}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Filtering untrusted evidence.}{2}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Evidence representation and attribution.}{2}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Positioning.}{2}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Problem Setup and Threat Model}{2}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Coalition-Level Evidence Filtering}{2}{section.4}\protected@file@percent }
+\newlabel{sec:method}{{4}{2}{Coalition-Level Evidence Filtering}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Excerpts, Relations, and Grouping}{3}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Auxiliary Graph-Support Impact}{3}{subsection.4.2}\protected@file@percent }
+\newlabel{sec:impact}{{4.2}{3}{Auxiliary Graph-Support Impact}{subsection.4.2}{}}
+\newlabel{eq:impact}{{5}{3}{Auxiliary Graph-Support Impact}{equation.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Risk Estimation and Eligibility}{3}{subsection.4.3}\protected@file@percent }
+\newlabel{eq:gate}{{6}{3}{Risk Estimation and Eligibility}{equation.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Context Selection}{3}{subsection.4.4}\protected@file@percent }
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Floor-preserving selection with a retention floor}}{4}{algorithm.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{alg:s2}{{1}{4}{Floor-preserving selection with a retention floor}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experimental Setup}{4}{section.5}\protected@file@percent }
+\newlabel{sec:protocol}{{5}{4}{Experimental Setup}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Data, Models, and Selection History}{4}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Metrics and Baselines}{4}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Evidence Resolution and Uncertainty}{4}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Results}{4}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Safety and Availability at Selected Points}{4}{subsection.6.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Attacked validation outcomes ($n=60$). Rows are defense configurations and columns are outcome rates; percentages use all queries as the denominator. These data selected the operating points.}}{5}{table.caption.9}\protected@file@percent }
+\newlabel{tab:val}{{1}{5}{Attacked validation outcomes ($n=60$). Rows are defense configurations and columns are outcome rates; percentages use all queries as the denominator. These data selected the operating points}{table.caption.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Revised attacked evaluation ($n=60$, development-exposed). Rows are defense configurations; the four outcome columns are integer counts that sum to 60 in every row. TrustRAG-adapt is an adapted baseline at its available operating point, not a refusal-matched comparison.}}{5}{table.caption.10}\protected@file@percent }
+\newlabel{tab:main}{{2}{5}{Revised attacked evaluation ($n=60$, development-exposed). Rows are defense configurations; the four outcome columns are integer counts that sum to 60 in every row. TrustRAG-adapt is an adapted baseline at its available operating point, not a refusal-matched comparison}{table.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Does Impact Contribute Beyond Other Features?}{5}{subsection.6.2}\protected@file@percent }
+\newlabel{sec:ablation}{{6.2}{5}{Does Impact Contribute Beyond Other Features?}{subsection.6.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Measured operating points on the 60-query revised attacked evaluation. Lower values on both axes are preferable; isolated points do not establish a calibrated frontier.}}{5}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:tradeoff}{{1}{5}{Measured operating points on the 60-query revised attacked evaluation. Lower values on both axes are preferable; isolated points do not establish a calibrated frontier}{figure.caption.11}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Strict Impact ablation on 60 attacked validation queries. The floor-preserving column fixes $(\mitlambda ,\mittau )=(0.2,0.25)$ and is identical across seeds; the hard-cut columns fix $\mittau =0.5$ and report attack counts for the three training seeds.}}{5}{table.caption.12}\protected@file@percent }
+\newlabel{tab:ablation}{{3}{5}{Strict Impact ablation on 60 attacked validation queries. The floor-preserving column fixes $(\lambda ,\tau )=(0.2,0.25)$ and is identical across seeds; the hard-cut columns fix $\tau =0.5$ and report attack counts for the three training seeds}{table.caption.12}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Impact--probe association by removal size at $H=16$. Rows stratify the 63 coalition records by how much evidence was removed, and intervals are reported query-bootstrap intervals. The 28 complete-evidence coalitions have constant Impact, so their within-group correlation is undefined.}}{6}{table.caption.13}\protected@file@percent }
+\newlabel{tab:probe}{{4}{6}{Impact--probe association by removal size at $H=16$. Rows stratify the 63 coalition records by how much evidence was removed, and intervals are reported query-bootstrap intervals. The 28 complete-evidence coalitions have constant Impact, so their within-group correlation is undefined}{table.caption.13}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Generation-Distribution Probes}{6}{subsection.6.3}\protected@file@percent }
+\newlabel{sec:probe}{{6.3}{6}{Generation-Distribution Probes}{subsection.6.3}{}}
+\newlabel{eq:probe}{{7}{6}{Generation-Distribution Probes}{equation.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Clean evaluation. Rows report refusal counts out of 300 queries per dataset and out of 900 overall, followed by answer scores on the gold-available HotpotQA evaluation subset. Gold answers are available for that subset only.}}{6}{table.caption.14}\protected@file@percent }
+\newlabel{tab:clean}{{5}{6}{Clean evaluation. Rows report refusal counts out of 300 queries per dataset and out of 900 overall, followed by answer scores on the gold-available HotpotQA evaluation subset. Gold answers are available for that subset only}{table.caption.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Clean Availability and Answer Scores}{6}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Transfer Across Generators}{6}{subsection.6.5}\protected@file@percent }
+\bibstyle{ACM-Reference-Format}
+\bibdata{references}
+\bibcite{rag}{{1}{2020}{{Lewis et~al\mbox  {.}}}{{}}}
+\bibcite{saferag}{{2}{2025}{{Liang et~al\mbox  {.}}}{{}}}
+\bibcite{nlimodel}{{3}{2026}{{Sentence Transformers}}{{}}}
+\bibcite{beir}{{4}{2021}{{Thakur et~al\mbox  {.}}}{{}}}
+\bibcite{bge}{{5}{2023}{{Xiao et~al\mbox  {.}}}{{}}}
+\bibcite{shieldrag}{{6}{2026}{{Yang et~al\mbox  {.}}}{{}}}
+\bibcite{trustrag}{{7}{2025}{{Zhou et~al\mbox  {.}}}{{}}}
+\bibcite{poisonedrag}{{8}{2024}{{Zou et~al\mbox  {.}}}{{}}}
+\newlabel{tocindent-1}{0pt}
+\newlabel{tocindent0}{0pt}
+\newlabel{tocindent1}{4.185pt}
+\newlabel{tocindent2}{10.35pt}
+\newlabel{tocindent3}{0pt}
+\newlabel{tocindent4}{0pt}
+\newlabel{tocindent5}{0pt}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Frozen ConGuard + Floor transfer on the 60-query attacked validation pool. Rows are generator backbones and entries are percentages shown as No-filter $\rightarrow $ ConGuard + Floor. No generator-specific retuning or independent transfer test is claimed.}}{7}{table.caption.15}\protected@file@percent }
+\newlabel{tab:transfer}{{6}{7}{Frozen ConGuard + Floor transfer on the 60-query attacked validation pool. Rows are generator backbones and entries are percentages shown as No-filter $\rightarrow $ ConGuard + Floor. No generator-specific retuning or independent transfer test is claimed}{table.caption.15}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Discussion and Limitations}{7}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{7}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{AI assistance.}{7}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{7}{section*.18}\protected@file@percent }
+\newlabel{TotPages}{{7}{7}{}{page.7}{}}
+\gdef \@abspage@last{7}

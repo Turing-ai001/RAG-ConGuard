@@ -1,0 +1,155 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{8}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{} and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showURL}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showURL #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[Lewis et~al\mbox{.}(2020)]%
+        {rag}
+\bibfield{author}{\bibinfo{person}{Patrick Lewis}, \bibinfo{person}{Ethan
+  Perez}, \bibinfo{person}{Aleksandra Piktus}, \bibinfo{person}{Fabio Petroni},
+  \bibinfo{person}{Vladimir Karpukhin}, \bibinfo{person}{Naman Goyal},
+  \bibinfo{person}{Heinrich K{\"u}ttler}, \bibinfo{person}{Mike Lewis},
+  \bibinfo{person}{Wen tau Yih}, \bibinfo{person}{Tim Rockt{\"a}schel},
+  \bibinfo{person}{Sebastian Riedel}, {and} \bibinfo{person}{Douwe Kiela}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{Retrieval-Augmented Generation for
+  Knowledge-Intensive {NLP} Tasks}. In \bibinfo{booktitle}{\emph{Advances in
+  Neural Information Processing Systems}}, Vol.~\bibinfo{volume}{33}.
+  \bibinfo{publisher}{Curran Associates, Inc.}, \bibinfo{address}{Red Hook, NY,
+  USA}, \bibinfo{pages}{9459--9474}.
+\newblock
+\urldef\tempurl%
+\url{https://arxiv.org/abs/2005.11401}
+\showURL{%
+\tempurl}
+
+
+\bibitem[Liang et~al\mbox{.}(2025)]%
+        {saferag}
+\bibfield{author}{\bibinfo{person}{Xun Liang}, \bibinfo{person}{Simin Niu},
+  \bibinfo{person}{Zhiyu Li}, \bibinfo{person}{Sensen Zhang},
+  \bibinfo{person}{Hanyu Wang}, \bibinfo{person}{Feiyu Xiong},
+  \bibinfo{person}{Jason~Zhaoxin Fan}, \bibinfo{person}{Bo Tang},
+  \bibinfo{person}{Shichao Song}, \bibinfo{person}{Mengwei Wang}, {and}
+  \bibinfo{person}{Jiawei Yang}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \bibinfo{title}{{SafeRAG}: Benchmarking Security in
+  Retrieval-Augmented Generation of Large Language Model}.
+\newblock \bibinfo{howpublished}{arXiv preprint arXiv:2501.18636}.
+\newblock
+\href{https://doi.org/10.48550/arXiv.2501.18636}{doi:\nolinkurl{10.48550/arXiv.2501.18636}}
+
+
+\bibitem[{Sentence Transformers}(2026)]%
+        {nlimodel}
+\bibfield{author}{\bibinfo{person}{{Sentence Transformers}}.}
+  \bibinfo{year}{2026}\natexlab{}.
+\newblock \bibinfo{title}{{cross-encoder/nli-deberta-v3-base}: Model Card}.
+\newblock
+\urldef\tempurl%
+\url{https://huggingface.co/cross-encoder/nli-deberta-v3-base}
+\showURL{%
+\tempurl}
+
+
+\bibitem[Thakur et~al\mbox{.}(2021)]%
+        {beir}
+\bibfield{author}{\bibinfo{person}{Nandan Thakur}, \bibinfo{person}{Nils
+  Reimers}, \bibinfo{person}{Andreas R{\"u}ckl{\'e}}, \bibinfo{person}{Abhishek
+  Srivastava}, {and} \bibinfo{person}{Iryna Gurevych}.}
+  \bibinfo{year}{2021}\natexlab{}.
+\newblock \bibinfo{title}{{BEIR}: A Heterogenous Benchmark for Zero-shot
+  Evaluation of Information Retrieval Models}.
+\newblock \bibinfo{howpublished}{arXiv preprint arXiv:2104.08663}.
+\newblock
+\href{https://doi.org/10.48550/arXiv.2104.08663}{doi:\nolinkurl{10.48550/arXiv.2104.08663}}
+
+
+\bibitem[Xiao et~al\mbox{.}(2023)]%
+        {bge}
+\bibfield{author}{\bibinfo{person}{Shitao Xiao}, \bibinfo{person}{Zheng Liu},
+  \bibinfo{person}{Peitian Zhang}, \bibinfo{person}{Niklas Muennighoff},
+  \bibinfo{person}{Defu Lian}, {and} \bibinfo{person}{Jian-Yun Nie}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \bibinfo{title}{{C-Pack}: Packed Resources For General Chinese
+  Embeddings}.
+\newblock \bibinfo{howpublished}{arXiv preprint arXiv:2309.07597}.
+\newblock
+\href{https://doi.org/10.48550/arXiv.2309.07597}{doi:\nolinkurl{10.48550/arXiv.2309.07597}}
+
+
+\bibitem[Yang et~al\mbox{.}(2026)]%
+        {shieldrag}
+\bibfield{author}{\bibinfo{person}{Peiru Yang}, \bibinfo{person}{Haoran Zheng},
+  \bibinfo{person}{Yi Luo}, \bibinfo{person}{Xinyi Liu},
+  \bibinfo{person}{Jinrui Wang}, \bibinfo{person}{Huili Wang},
+  \bibinfo{person}{Xintian Li}, \bibinfo{person}{Yongfeng Huang}, {and}
+  \bibinfo{person}{Tao Qi}.} \bibinfo{year}{2026}\natexlab{}.
+\newblock \showarticletitle{{ShieldRAG}: Safeguarding Retrieval-Augmented
+  Generation from Untrusted Knowledge Bases}.
+\newblock \bibinfo{journal}{\emph{Proceedings of the AAAI Conference on
+  Artificial Intelligence}} \bibinfo{volume}{40}, \bibinfo{number}{40}
+  (\bibinfo{year}{2026}), \bibinfo{pages}{34286--34294}.
+\newblock
+\href{https://doi.org/10.1609/aaai.v40i40.40725}{doi:\nolinkurl{10.1609/aaai.v40i40.40725}}
+
+
+\bibitem[Zhou et~al\mbox{.}(2025)]%
+        {trustrag}
+\bibfield{author}{\bibinfo{person}{Huichi Zhou}, \bibinfo{person}{Kin-Hei Lee},
+  \bibinfo{person}{Zhonghao Zhan}, \bibinfo{person}{Yue Chen},
+  \bibinfo{person}{Zhenhao Li}, \bibinfo{person}{Zhaoyang Wang},
+  \bibinfo{person}{Hamed Haddadi}, {and} \bibinfo{person}{Emine Yilmaz}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \bibinfo{title}{{TrustRAG}: Enhancing Robustness and Trustworthiness
+  in Retrieval-Augmented Generation}.
+\newblock \bibinfo{howpublished}{arXiv preprint arXiv:2501.00879}.
+\newblock
+\href{https://doi.org/10.48550/arXiv.2501.00879}{doi:\nolinkurl{10.48550/arXiv.2501.00879}}
+
+
+\bibitem[Zou et~al\mbox{.}(2024)]%
+        {poisonedrag}
+\bibfield{author}{\bibinfo{person}{Wei Zou}, \bibinfo{person}{Runpeng Geng},
+  \bibinfo{person}{Binghui Wang}, {and} \bibinfo{person}{Jinyuan Jia}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \bibinfo{title}{{PoisonedRAG}: Knowledge Corruption Attacks to
+  Retrieval-Augmented Generation of Large Language Models}.
+\newblock \bibinfo{howpublished}{arXiv preprint arXiv:2402.07867}.
+\newblock
+\href{https://doi.org/10.48550/arXiv.2402.07867}{doi:\nolinkurl{10.48550/arXiv.2402.07867}}
+
+
+\end{thebibliography}
